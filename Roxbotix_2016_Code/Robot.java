@@ -239,20 +239,7 @@ public class Robot extends IterativeRobot {
      */
     public void teleopPeriodic()
     {
-    	//Starts USB camera
-		NIVision.IMAQdxStartAcquisition(session);
-		//Instantiate rectangles (fix the location of the rectangles
-		NIVision.Rect rightRect = new NIVision.Rect(99,440,176,13);
-		NIVision.Rect midRect = new NIVision.Rect(135,132,25,25);
-		//Draw rectangles on screen
-		NIVision.IMAQdxGrab(session, frame, 1);
-		NIVision.imaqDrawShapeOnImage(frame, frame, rightRect,
-				DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
-		NIVision.imaqDrawShapeOnImage(frame, frame, midRect,
-				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
-		//display the new image
-		CameraServer.getInstance().setImage(frame);
-
+    	cameraUI();
 		// Sets joystick values
 		stick0X = stick[0].getAxis(Joystick.AxisType.kX);
 		stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
@@ -369,6 +356,23 @@ public class Robot extends IterativeRobot {
     /**
      * This function is called periodically during test mode
      */
+    public void cameraUI()
+    {
+    	//Starts USB camera
+    	NIVision.IMAQdxStartAcquisition(session);
+    	//Instantiate rectangles (fix the location of the rectangles
+    	NIVision.Rect rightRect = new NIVision.Rect(99,440,176,13);
+    	NIVision.Rect midRect = new NIVision.Rect(135,132,25,25);
+    	//Draw rectangles on screen
+    	NIVision.IMAQdxGrab(session, frame, 1);
+    	NIVision.imaqDrawShapeOnImage(frame, frame, rightRect,
+    			DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
+    	NIVision.imaqDrawShapeOnImage(frame, frame, midRect,
+    				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
+    	//display the new image
+    	CameraServer.getInstance().setImage(frame);
+
+    }
     public void testPeriodic() 
     {
     	
