@@ -268,10 +268,10 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putDouble("gear", drive);
     	if(drive == 1 && stick[0].getRawButton(3)&&change)
     	{
-    		drive = .5;
+    		drive = .75;
     		change = false;
     	}
-    	else if(drive == .5 && stick[0].getRawButton(3)&&change)
+    	else if(drive == .75 && stick[0].getRawButton(3)&&change)
     	{
     		drive = 1;
     		change = false;
