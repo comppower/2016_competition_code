@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.Relay;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  * HELP
+ * help
  */
 public class Robot extends IterativeRobot {
 	private final String defaultAuto = "Drive to Obstacle";
