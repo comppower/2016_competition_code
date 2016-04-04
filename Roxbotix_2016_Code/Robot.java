@@ -1,0 +1,555 @@
+
+package org.usfirst.frc.team4361.robot;
+
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import com.ni.vision.NIVision;
+import com.ni.vision.NIVision.DrawMode;
+import com.ni.vision.NIVision.Image;
+import com.ni.vision.NIVision.ShapeMode;
+
+import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Relay;
+
+/**
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the IterativeRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the manifest file in the resource
+ * directory.
+ */
+public class Robot extends IterativeRobot {
+	private final String defaultAuto = "Drive to Obstacle";
+    private String autoSelected;
+    private SendableChooser chooser;
+	
+    //Roxbotix Variables
+    private Autonomous auto;
+    private Portcullis port;
+    
+    private Joystick[] stick;
+    
+    private double stick0X, stick0Y, stick1X, stick1Y;
+    
+    private CANTalon[] CAN;
+    
+    private Drive left, right;
+    
+    private Shooter shooter;
+    
+    private Digit digit;
+    
+    private DigitalInput[] limitSwitch;
+    
+    private Relay[] light;
+    
+    double drive;
+    boolean change;
+    
+    //GRIP 
+    NetworkTable table;
+	double corArea; // or expected intial value
+	boolean found;
+	boolean valueUpdate;
+	int index;
+	final double[] defaultVal={0.0};
+	double[] area;
+	double[] centerXs;
+	double[] centerYs;
+	double centerX;
+	double centerY;
+	double filter;
+	double shootArea; // need to calculate smallest possible area to make
+							// shot from
+    private Encoder lEnc, rEnc;
+    
+    //USB Camera
+    int session;
+    Image frame;
+    
+    /**
+     * This function is run when the robot is first started up and should be
+     * used for any initialization code.
+     */
+    public void robotInit() {
+		
+    	lEnc = new Encoder(8, 9, true);
+    	rEnc = new Encoder(6, 7, true);
+    	
+    	drive = 1.0;
+    	
+    	light = new Relay[2];
+    	for(int i = 0; i < light.length; i++)
+    	{
+    		light[i] = new Relay(i);
+    	}
+    	
+    	limitSwitch = new DigitalInput[3];
+    	for(int i = 0; i < limitSwitch.length; i++)
+    	{
+    		limitSwitch[i] = new DigitalInput(i);
+    	}
+     	
+    	//Roxbotix Variables
+        digit = new Digit();
+        
+        stick = new Joystick[3];
+        for(int i = 0; i < stick.length; i++)
+        {
+        	stick[i] = new Joystick(i);
+        }
+        
+        CAN = new CANTalon[12];
+        for(int i = 0; i < CAN.length; i++)
+        {
+        	CAN[i] = new CANTalon(i);
+        }
+        
+        CANTalon[] leftDrive = {CAN[0], CAN[1]};
+    	left = new Drive(leftDrive);
+    	
+    	CANTalon[] rightDrive = {CAN[2], CAN[3]};
+    	right = new Drive(rightDrive);
+    	
+    	CANTalon[] shoot = { CAN[4], CAN[5]};
+    	CANTalon[] shooterLift = {CAN[6], CAN[7]};
+    	CANTalon[] index = {CAN[8]};
+    	shooter = new Shooter(shoot, shooterLift, index, limitSwitch, light);
+    	
+    	CANTalon[] ChevelLift = {CAN[11]};
+    	
+    	//lEnc = new Encoder(0, 1, true, EncodingType.k1X); rEnc = new Encoder(2, 3, true, EncodingType.k1X);
+    	
+    	port = new Portcullis(CAN[10], light[1]);
+    	
+    	//auto = new Autonomous(left, right, shooter);
+    	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
+    	
+    	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
+    	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
+    	stick1X = stick[1].getAxis(Joystick.AxisType.kX);
+    	stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
+    	
+    	digit.print("4361");
+    	change = true;
+    	
+    	
+    	//GRIP
+        shootArea = 185; 
+        found = false;
+        valueUpdate= true;
+        //set up corrected centers for the robot
+        filter=1;
+        table = NetworkTable.getTable("GRIP/myContoursReport");
+        corArea= 200;
+        area= table.getNumberArray("area", defaultVal);
+        centerYs= table.getNumberArray("centerY", defaultVal);
+        centerXs= table.getNumberArray("centerX", defaultVal);
+        
+    	//Default Variables
+    	chooser = new SendableChooser();
+        chooser.addDefault("Drive to Obstacle", "default");
+        chooser.addObject("Low Bar", "lowbar");
+        chooser.addObject("Portcullis", "portcullis");
+        chooser.addObject("Chevel De Frise", "chevelDeFrise");
+        chooser.addObject("Moat", "moat");
+        chooser.addObject("Ramparts", "ramparts");
+        chooser.addObject("Drawbridge", "drawbridge");
+        chooser.addObject("Sally Port", "sallyPort");
+        chooser.addObject("Rock Wall", "rockWall");
+        chooser.addObject("Rough Terrain", "roughTerrain");
+        
+        SmartDashboard.putData("Auto choices", chooser);
+        
+        //USB CAM INIT
+        frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_U8, 0);
+
+        // the camera name (ex "cam0") can be found through the roborio web interface
+        session = NIVision.IMAQdxOpenCamera("cam1",
+                NIVision.IMAQdxCameraControlMode.CameraControlModeController);
+        NIVision.IMAQdxConfigureGrab(session);
+        
+    }
+    
+	/**
+	 * This autonomous (along with the chooser code above) shows how to select between different autonomous modes
+	 * using the dashboard. The sendable chooser code works with the Java SmartDashboard. If you prefer the LabVIEW
+	 * Dashboard, remove all of the chooser code and uncomment the getString line to get the auto name from the text box
+	 * below the Gyro
+	 *
+	 * You can add additional auto modes by adding additional comparisons to the switch structure below with additional strings.
+	 * If using the SendableChooser make sure to add them to the chooser code above as well.
+	 */
+    public void autonomousInit() {
+    	autoSelected = (String) chooser.getSelected();
+//		autoSelected = SmartDashboard.getString("Auto Selector", defaultAuto);
+		System.out.println("Auto selected: " + autoSelected);
+    }
+
+    /**
+     * This function is called periodically during autonomous
+     */
+    public void autonomousPeriodic() {
+    	switch(autoSelected) {
+    	case "portcullis":
+    	auto.portcullis();
+            break;
+    	case "chevelDeFrise":
+    	auto.chevelDeFrise();
+            break;
+    	case "moat":
+    	auto.moat();
+            break;
+    	case "ramparts":
+    	auto.ramparts();
+            break;
+    	case "drawbridge":
+    	auto.drawbridge();
+            break;
+    	case "sallyPort":
+    	auto.sallyPort();
+            break;
+    	case "rockWall":
+    	auto.rockWall();
+            break;
+    	case "roughTerrain":
+    	auto.roughTerrain();
+            break;
+    	case "lowbar":
+        auto.lowBar();
+        	break;
+    	
+    	case defaultAuto:
+    	default:
+    	auto.defaultGoToObstacle();
+            break;
+    	}
+    }
+
+    /**
+     * This function is called periodically during operator control
+     */
+    public void teleopPeriodic()
+    {
+    	//Starts USB camera
+		NIVision.IMAQdxStartAcquisition(session);
+		//Instantiate rectangles (fix the location of the rectangles
+		NIVision.Rect rightRect = new NIVision.Rect(99,440,176,13);
+		NIVision.Rect midRect = new NIVision.Rect(135,132,25,25);
+		//Draw rectangles on screen
+		NIVision.IMAQdxGrab(session, frame, 1);
+		NIVision.imaqDrawShapeOnImage(frame, frame, rightRect,
+				DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
+		NIVision.imaqDrawShapeOnImage(frame, frame, midRect,
+				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
+		//display the new image
+		CameraServer.getInstance().setImage(frame);
+
+		// Sets joystick values
+		stick0X = stick[0].getAxis(Joystick.AxisType.kX);
+		stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
+		stick1X = stick[1].getAxis(Joystick.AxisType.kX);
+		stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
+		
+		//sets vision tracking vals
+		area= table.getNumberArray("area", defaultVal);
+        centerYs= table.getNumberArray("centerY", defaultVal);
+        centerXs= table.getNumberArray("centerX", defaultVal);
+    	
+
+    	SmartDashboard.putDouble("gear", drive);
+    	if(drive == 1 && stick[0].getRawButton(3)&&change)
+    	{
+    		drive = .5;
+    		change = false;
+    	}
+    	else if(drive == .5 && stick[0].getRawButton(3)&&change)
+    	{
+    		drive = 1;
+    		change = false;
+    	}
+    	
+    	if(!stick[0].getRawButton(3))
+    		change = true;
+    	
+    	if(stick[1].getRawButton(4)&&area.length>0)
+    	{
+            //Teleop Auto Routine
+    		area= table.getNumberArray("area", defaultVal);
+            centerYs= table.getNumberArray("centerY", defaultVal);
+            centerXs= table.getNumberArray("centerX", defaultVal);
+    		autoAlign(centerXs[0], centerYs[0], area[0]);
+    	}
+    	//untested code
+    	else
+    	{
+    		if(stick[0].getRawButton(4))
+    		{
+    			if(stick0Y<-.07 || stick0Y>.07)
+    			{
+		    		right.drive(stick0Y*drive);
+		    		left.drive(-stick0Y*drive);
+    			}
+		    	else
+		    	{
+		    		right.drive(0);
+		    		left.drive(0);
+		    	}
+    		}
+    		else if(stick[0].getRawButton(6))
+    		{
+    			if(stick0X<-.07 || stick0X>.07)
+    			{
+		    		right.drive(stick0X*drive);
+		    		left.drive(stick0X*drive);
+    			}
+		    	else
+		    	{
+		    		right.drive(0);
+		    		left.drive(0);
+		    	}
+    		}
+    		else
+    		{
+		    	//Drives Chassis
+		    	if(stick0Y<-.07 || stick0Y>.07)
+		    		right.drive(stick0Y*drive);
+		    	else
+		    		right.drive(0);
+		    	if(stick1Y<-.07 || stick1Y>.07)
+		    		left.drive(-stick1Y*drive);
+		    	else
+		    		left.drive(0);
+    		}
+    		//end untested code
+	    	
+	    	//Drives shooter
+	    	//shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
+	    	shooter.liftSim(stick[2].getAxis(Joystick.AxisType.kY));
+	    	shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
+    	}
+    	
+    	//Drives indexer
+    	shooter.indexAuto(stick[0].getRawButton(1));
+    	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));
+    	
+    	//Untested
+    	port.lift(stick[2].getPOV());
+    	//Untested
+    	
+    	//Timer.delay(0.005);		// wait for a motor update time
+        /**
+         * could be a problem section, remove to reduce lag my man
+         */
+    	//NIVision.IMAQdxStopAcquisition(session);
+    	
+        
+        //Prints out UI (untested code)
+        if(centerXs.length>0&&centerYs.length>0)
+        {
+        	printUI(centerXs[0], centerYs[0]);
+        }
+        else
+        {
+        	printUI(-1,-1);
+        }
+        //end untested code
+        
+
+    }
+    
+    /**
+     * This function is called periodically during test mode
+     */
+    public void testPeriodic() 
+    {
+    	
+    }
+    //Automatically aligns with high goal (untested method)
+    public void autoAlign(double yCur, double xCur, double areaCur)
+    {
+    	//use if statements so the index is updated with every move, and it is more effecient
+    	/* check to see if the robot is out of alignment
+    	* I will need to determine the expected percent error
+    	* from testing*/
+    	
+    	//Calibration values
+    	double xCal = 156;
+    	double yCal = 31;
+    	double areaCal=10;
+    	if(Math.abs(xCur-xCal)/xCal>.05)
+    	{
+    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
+    		if(xCur-xCal>0)
+    		{
+    			right.drive(-.2);
+    			left.drive(-.2);
+    			SmartDashboard.putString("vision", "left");
+    		}
+    		else if(xCur-xCal<0)
+    		{
+    			right.drive(.2);
+    			left.drive(.2);
+    			SmartDashboard.putString("vision", "right");
+    		}
+    	}
+    	else
+    	{
+    		right.drive(0);
+    		left.drive(0);
+    	}
+    	if((yCur-yCal)>0)
+    	{
+    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
+    		// becuase this value needs to be about 1
+    		
+    		//find where (0,0) is 
+    		right.drive(-.3);
+    		left.drive(.3);
+    		SmartDashboard.putString("vision", "forward");
+    	}
+    	else if(yCur-yCal<0/*again, check (0,0) spot*/)	
+    	{
+    		right.drive(.3);
+    		left.drive(-.3);
+    		SmartDashboard.putString("vision", "back");
+    	}
+    	else
+    	{
+    		right.drive(0);
+    		left.drive(0);
+    	}
+    	if((Math.abs(xCur-xCal)/xCal)<.05 && Math.abs((yCur-yCal)/yCal)<.05)
+    	{
+    		if(areaCur>areaCal)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
+    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
+    		{
+    			//fire the bloody thing
+    			SmartDashboard.putString("vision", "fire");
+    			right.drive(0);
+    			left.drive(0);
+    			shooter.shoot(false,true);
+    		}
+    		else
+    		{
+    			SmartDashboard.putString("vision", "go forward");
+    			right.drive(-.2);
+    			left.drive(.2);
+    		}
+    	}
+    }
+    
+    //Prints out relevant data on the smartdashboard
+    public void printUI(double yCur, double xCur)
+    {
+    	//supply correct x and y vals for calibration
+    	double xCal = 156;
+    	double yCal = 31;
+    	SmartDashboard.putDouble("ROTATION", (xCal-xCur)/xCal);
+    	SmartDashboard.putDouble("ELEVATION", (yCal-yCur)/yCal);
+    	SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
+    	SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
+    }
+    
+    //not working
+    public void track()
+    {
+    	System.out.println(corArea);
+
+    	double xCal = 133;// someVal
+    	double yCal = 272; // someVal
+    	area= table.getNumberArray("area", defaultVal);
+        centerYs= table.getNumberArray("centerY", defaultVal);
+        centerXs= table.getNumberArray("centerX", defaultVal);
+        valueUpdate = false;
+	    if(!found)//locate the target
+	    {
+	    	area= table.getNumberArray("area", defaultVal);
+	        centerYs= table.getNumberArray("centerY", defaultVal);
+	        centerXs= table.getNumberArray("centerX", defaultVal);
+	    	//System.out.print(Math.abs(corArea-area[0])/corArea + ": area diff ");
+	        
+	    	System.out.println("locating target, and lifting shooter");
+	
+	    	for(int i=0; i<area.length; i++)
+	    	{
+	    		if((Math.abs(corArea-area[i])/corArea)<filter)//determine the percent error
+	    		{
+	    			corArea=area[i];
+	    			centerX=centerXs[i];
+	    	    	centerY=centerYs[i];
+	    			found = true;
+	    		}
+	    		else
+	    		{
+	    			System.out.println("target not found, rotating");
+	    		}
+	    	}
+			filter +=.1;
+	    		
+	    }
+	
+    	if(found&&area.length>0)
+    	{
+    		//make sure the robot sees something, and update the target data
+    		corArea=area[0];
+    		centerX=centerXs[0];
+    		centerY=centerYs[0];
+    		valueUpdate =true;
+    	}
+    	if(!valueUpdate)
+    	{
+    		System.out.println("target lost");
+    	}
+    
+    	if(valueUpdate)
+    	{
+	    	//System.out.println(centerX + "," + centerY);
+	    	if(Math.abs(centerX-xCal)/xCal>.05)//use if statements so the index is updated with every move, and it is more effecient
+	    	/* check to see if the robot is out of alignment
+	    	* I will need to determine the expected percent error
+	    	* from testing*/
+	    	{
+	    		System.out.println("rotating");
+	    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
+	    		if(centerX-xCal>0)
+	    			SmartDashboard.putString("visionX", "Go Right");
+	    		else if(centerX-xCal<0)
+	    			SmartDashboard.putString("visionX", "Go Left");
+	    		else
+	    			SmartDashboard.putString("visionX", "Good");
+	    	}
+	    	if((Math.abs(centerY-yCal)/yCal)>.05)
+	    	{
+	    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
+	    		// becuase this value needs to be about 1
+	    		System.out.println("adjusting shooter");
+	    		//System.out.print(Math.abs(centerY-yCal)/yCal);
+	    		if(centerY-yCal>0)
+	    			SmartDashboard.putString("visionY", "Go Down");
+	    		else if(centerY-yCal<0)
+	    			SmartDashboard.putString("visionY", "Go Up");
+	    		else
+	    			SmartDashboard.putString("visionY", "Good");
+	    	}
+	    	if((Math.abs(centerX-xCal)/xCal)<.05 && Math.abs((centerY-yCal)/yCal)<.05)
+	    	{
+	    		if(corArea>shootArea)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
+	    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
+	    		{
+	    			//fire the bloody thing
+	    			System.out.println("fire");
+	    		}
+	    		System.out.println("moving forward");
+	    	}
+    	}
+    }
+}
