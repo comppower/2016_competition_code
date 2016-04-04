@@ -251,7 +251,7 @@ public class Robot extends IterativeRobot {
         centerYs= table.getNumberArray("centerY", defaultVal);
         centerXs= table.getNumberArray("centerX", defaultVal);
     	
-
+        //adjusts gear box
     	SmartDashboard.putDouble("gear", drive);
     	if(drive == 1 && stick[0].getRawButton(3)&&change)
     	{
@@ -267,55 +267,42 @@ public class Robot extends IterativeRobot {
     	if(!stick[0].getRawButton(3))
     		change = true;
     	
-    	if(stick[1].getRawButton(4)&&area.length>0)
-    	{
-            //Teleop Auto Routine
-    		area= table.getNumberArray("area", defaultVal);
-            centerYs= table.getNumberArray("centerY", defaultVal);
-            centerXs= table.getNumberArray("centerX", defaultVal);
-    		autoAlign(centerXs[0], centerYs[0], area[0]);
-    	}
-    	//untested code
-    	else
-    	{
-    		if(stick[0].getRawButton(4))
-    		{
-    			if(stick0Y<-.07 || stick0Y>.07)
-    			{
-		    		right.drive(stick0Y*drive);
-		    		left.drive(-stick0Y*drive);
-    			}
-		    	else
-		    	{
-		    		right.drive(0);
-		    		left.drive(0);
-		    	}
-    		}
-    		else if(stick[0].getRawButton(6))
-    		{
-    			if(stick0X<-.07 || stick0X>.07)
-    			{
-		    		right.drive(stick0X*drive);
-		    		left.drive(stick0X*drive);
-    			}
-		    	else
-		    	{
-		    		right.drive(0);
-		    		left.drive(0);
-		    	}
-    		}
-    		else
-    		{
-		    	//Drives Chassis
-		    	if(stick0Y<-.07 || stick0Y>.07)
-		    		right.drive(stick0Y*drive);
-		    	else
-		    		right.drive(0);
-		    	if(stick1Y<-.07 || stick1Y>.07)
-		    		left.drive(-stick1Y*drive);
-		    	else
-		    		left.drive(0);
-    		}
+    	//perfect rotation and drive code
+		if (stick[0].getRawButton(4)) {
+			if (stick0Y < -.07 || stick0Y > .07) {
+				right.drive(stick0Y * drive);
+				left.drive(-stick0Y * drive);
+			} else {
+				right.drive(0);
+				left.drive(0);
+			}
+		}
+
+		else if (stick[0].getRawButton(6)) 
+		{
+			if (stick0X < -.07 || stick0X > .07) 
+			{
+				right.drive(stick0X * drive);
+				left.drive(stick0X * drive);
+			} 
+			else 
+			{
+				right.drive(0);
+				left.drive(0);
+			}
+		} 
+		else 
+		{
+			// Drives Chassis
+			if (stick0Y < -.07 || stick0Y > .07)
+				right.drive(stick0Y * drive);
+			else
+				right.drive(0);
+			if (stick1Y < -.07 || stick1Y > .07)
+				left.drive(-stick1Y * drive);
+			else
+				left.drive(0);
+		}
     		//end untested code
 	    	
 	    	//Drives shooter
@@ -330,15 +317,7 @@ public class Robot extends IterativeRobot {
     	
     	//Untested
     	port.lift(stick[2].getPOV());
-    	//Untested
-    	
-    	//Timer.delay(0.005);		// wait for a motor update time
-        /**
-         * could be a problem section, remove to reduce lag my man
-         */
-    	//NIVision.IMAQdxStopAcquisition(session);
-    	
-        
+    	       
         //Prints out UI (untested code)
         if(centerXs.length>0&&centerYs.length>0)
         {
