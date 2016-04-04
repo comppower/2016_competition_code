@@ -81,5 +81,9 @@ public class Portcullis {
 			move = true;
 		}
 	}
+	public void lift(double val)
+	{
+		CAN.set(val);
+	}
 
 }

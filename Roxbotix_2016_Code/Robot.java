@@ -303,20 +303,30 @@ public class Robot extends IterativeRobot {
 			else
 				left.drive(0);
 		}
-    		//end untested code
+    	//end untested code
 	    	
-	    	//Drives shooter
-	    	//shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
-	    	shooter.liftSim(stick[2].getAxis(Joystick.AxisType.kY));
-	    	shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
-    	}
+	    //Drives shooter
+	    //shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
+		if(stick[2].getIsXbox())
+		{
+			shooter.liftSim(stick[2].getRawAxis(1));
+			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(6));
+			port.lift(stick[2].getRawAxis(5));
+		}
+		else
+		{
+			shooter.liftSim(stick[2].getAxis(Joystick.AxisType.kY));
+			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
+		   	port.lift(stick[2].getPOV());
+		}
+
     	
     	//Drives indexer
     	shooter.indexAuto(stick[0].getRawButton(1));
     	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));
     	
     	//Untested
-    	port.lift(stick[2].getPOV());
+ 
     	       
         //Prints out UI (untested code)
         if(centerXs.length>0&&centerYs.length>0)
