@@ -74,6 +74,8 @@ public class Autonomous{
 			goDistance(50, .4);
 			//shoot.lift(0);
 		}
+		if(runNum == 3)
+			runNum = -1;
 	}
 	
 	public void portcullis()
@@ -96,6 +98,8 @@ public class Autonomous{
 		{
 			goDistance(5, -.3);			
 		}
+		if(runNum == 4)
+			runNum = -1;
 	}
 	
 	public void chevelDeFrise()
@@ -116,6 +120,8 @@ public class Autonomous{
 		}
 		if(runNum == 3)
 			goDistance(5, -.4);
+		if(runNum == 4)
+			runNum = -1;
 	}
 	//end untested code
 	
@@ -136,6 +142,9 @@ public class Autonomous{
 			port.lift(-1);
 			//shoot.lift(0);
 		}
+		if(runNum == 3)
+			runNum = -1;
+		
 		//end calibration
 	}
 	
@@ -145,6 +154,8 @@ public class Autonomous{
 			goDistance(54, .3);
 		if(runNum == 1)
 			goDistance(65, .8);
+		if(runNum == 2)
+			runNum = -1;
 	}
 	
 	public void drawbridge()
@@ -175,6 +186,8 @@ public class Autonomous{
 			port.lift(-1);
 			//shoot.lift(0);
 		}
+		if(runNum == 3)
+			runNum = -1;
 	}
 	
 	public void roughTerrain()
@@ -192,6 +205,94 @@ public class Autonomous{
 			goDistance(5, -.4);
 			port.lift(-1);
 			//shoot.lift(0);
+		}
+		if(runNum == 3)
+			runNum = -1;
+	}
+	
+	//Merge
+	//runNum = -100 mean stop all Autonomous Function
+	public void high(int pos, String def)
+	{
+		if(runNum == -1 && !hasRun)
+		{
+			int minDist, maxDist;
+			
+			if(def.equals("lowbar"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else if(def.equals("roughTerrain"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else if(def.equals("rockWall"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else if(def.equals("ramparts"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else if(def.equals("moat"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else if(def.equals("chevelDeFrise"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else if(def.equals("portcullis"))
+			{
+				minDist = 0;
+				maxDist = 0;
+			}
+			else
+			{
+				runNum = -100;
+				return;
+			}
+			hasRun = true;
+		}
+		
+		if(runNum == -1)
+		{
+			
+		}
+		if(runNum == -2)
+		{
+			if(pos == 0)
+			{
+				runNum = -100;
+				return;
+			}
+			
+			else if(pos == 1)//LowBar
+			{
+				
+			}
+			else if(pos == 2)
+			{
+				
+			}
+			else if(pos == 3)
+			{
+				
+			}
+			else if(pos == 4)
+			{
+				
+			}
+			else if(pos == 5)
+			{
+				
+			}
 		}
 	}
 	

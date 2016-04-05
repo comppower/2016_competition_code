@@ -228,7 +228,7 @@ public class Robot extends IterativeRobot {
     	//Merge
     	switch(secSelected){
     	case "High":
-    	//auto.
+    	auto.high(SmartDashboard.getNumber("posGet"), autoSelected);
     		break;
     	
     	case "None":
