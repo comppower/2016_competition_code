@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj.Relay;
 public class Robot extends IterativeRobot {
 	private final String defaultAuto = "Drive to Obstacle";
     private String autoSelected, secSelected;
-    private SendableChooser chooser, sec;
+    private SendableChooser chooser;
 	
     //Roxbotix Variables
     private Autonomous auto;
@@ -153,12 +153,7 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Rock Wall", "rockWall");
         chooser.addObject("Rough Terrain", "roughTerrain");
         
-        sec = new SendableChooser();
-        sec.addDefault("None", "none");
-        
         SmartDashboard.putData("Auto choices", chooser);
-        SmartDashboard.putData("Secondary", sec);
-        SmartDashboard.putNumber("PosGet", 0);
         
         //USB CAM INIT
         frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_U8, 0);
@@ -225,9 +220,6 @@ public class Robot extends IterativeRobot {
             break;
     	}
     	
-    	switch(){
-    	
-    	}
     }
 
     /**
