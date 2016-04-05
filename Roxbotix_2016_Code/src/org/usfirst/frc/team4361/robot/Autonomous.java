@@ -212,6 +212,7 @@ public class Autonomous{
 	
 	//Merge
 	//runNum = -100 mean stop all Autonomous Function
+	//h
 	public void high(int pos, String def)
 	{
 		if(runNum == -1 && !hasRun)
