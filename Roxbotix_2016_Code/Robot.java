@@ -56,19 +56,9 @@ public class Robot extends IterativeRobot {
     
     //GRIP 
     NetworkTable table;
-	double corArea; // or expected intial value
-	boolean found;
-	boolean valueUpdate;
-	int index;
 	final double[] defaultVal={0.0};
-	double[] area;
-	double[] centerXs;
-	double[] centerYs;
-	double centerX;
-	double centerY;
-	double filter;
-	double shootArea; // need to calculate smallest possible area to make
-							// shot from
+	Tracking track;
+    WeightedAverage ave; 
     private Encoder lEnc, rEnc;
     
     //USB Camera
@@ -143,16 +133,12 @@ public class Robot extends IterativeRobot {
     	
     	
     	//GRIP
-        shootArea = 185; 
-        found = false;
-        valueUpdate= true;
+    	
+
         //set up corrected centers for the robot
-        filter=1;
         table = NetworkTable.getTable("GRIP/myContoursReport");
-        corArea= 200;
-        area= table.getNumberArray("area", defaultVal);
-        centerYs= table.getNumberArray("centerY", defaultVal);
-        centerXs= table.getNumberArray("centerX", defaultVal);
+        track = new Tracking(133,105);
+        ave = new WeightedAverage(10,700);
         
     	//Default Variables
     	chooser = new SendableChooser();
@@ -247,9 +233,7 @@ public class Robot extends IterativeRobot {
 		stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
 		
 		//sets vision tracking vals
-		area= table.getNumberArray("area", defaultVal);
-        centerYs= table.getNumberArray("centerY", defaultVal);
-        centerXs= table.getNumberArray("centerX", defaultVal);
+
     	
         //adjusts gear box
     	SmartDashboard.putDouble("gear", drive);
@@ -277,6 +261,54 @@ public class Robot extends IterativeRobot {
 				left.drive(0);
 			}
 		}
+		//tracking portion
+        double[] deafultVal = new double[0];
+    	double[] centerX = table.getNumberArray("centerX", deafultVal);
+    	double[] centerY = table.getNumberArray("centerY", deafultVal);
+    	double[] width = table.getNumberArray("width",deafultVal);
+    	double[] length = table.getNumberArray("height", deafultVal);
+    	double[] area = table.getNumberArray("area",deafultVal);
+    	String dir = "";
+    	double speed=.15;
+    	
+    	else if(centerX.length>0&&stick[1].getRawButton(1))
+    	{
+    		if(!ave.cal)
+    		{
+    			cal(length, width, centerX, centerY);
+    			System.out.println("Calibrating");
+    		}
+    		else
+    		{
+    			double[] values = input(length, width, centerX, centerY, area);
+    			 dir = track.track(values[0], values[1]);
+    			 filter = values[2];
+    			 System.out.println(dir);
+    		}
+    		
+    		if(dir.equals("left"))
+    		{
+    			//1.5 to correct for slower turn
+    			left.drive(-speed);
+    			right.drive(-speed);
+    
+    		}
+    		if(dir.equals("right"))
+    		{
+    			left.drive(speed);
+    			right.drive(speed);
+    		}
+    		if(dir.equals("forward"))
+    		{
+    			left.drive(-speed*1.25);
+    			right.drive(speed);
+    		}
+    		if(dir.equals("back"))
+    		{
+    			left.drive(speed*1.25);
+    			right.drive(-speed*1.25);
+    		}
+    	}
 
 		else if (stick[0].getRawButton(6)) 
 		{
@@ -338,13 +370,127 @@ public class Robot extends IterativeRobot {
         	printUI(-1,-1);
         }
         //end untested code
-        
+       
+
 
     }
     
     /**
      * This function is called periodically during test mode
      */
+    public void cal(double[] length, double[] width, double[] centerX, double[] centerY)
+    {
+    	//check to see if the array is full already
+    	ave.cal=true;
+		for(int i=0; i<ave.centerX.length; i++)
+		{
+			if(ave.centerX[i]==-1)
+			{
+				ave.cal=false;
+			}
+		}
+		//intializes values to look for the best hit
+    	int index =-1;
+		double score =0;
+		//calibrate this corScore value
+		double corScore=1;
+		//replace this loop with a loop to look through length and make score
+		//length[i]/width[i]
+		for(int i=0; i<length.length; i++)
+		{
+			score = length[i]/width[i];
+			if(Math.abs(score-1.4)<Math.abs(corScore-1.4))
+			{
+				corScore=score;
+				index = i;
+			}
+		}
+		//do nothing if the index isn't changed
+		if(index ==-1)
+		{
+
+		}
+		else
+		{
+			//System.out.println(" 	"+corScore + " was closest at "+index);
+			//put in centerX[index] here instead of corScore
+			ave.xIn(centerX[index]);
+			ave.yIn(centerY[index]);
+		}
+    }
+    public void cal(double[] length, double[] width, double[] centerX, double[] centerY)
+    {
+    	//check to see if the array is full already
+    	ave.cal=true;
+		for(int i=0; i<ave.centerX.length; i++)
+		{
+			if(ave.centerX[i]==-1)
+			{
+				ave.cal=false;
+			}
+		}
+		//intializes values to look for the best hit
+    	int index =-1;
+		double score =0;
+		//calibrate this corScore value
+		double corScore=1;
+		//replace this loop with a loop to look through length and make score
+		//length[i]/width[i]
+		for(int i=0; i<length.length; i++)
+		{
+			score = length[i]/width[i];
+			if(Math.abs(score-1.4)<Math.abs(corScore-1.4))
+			{
+				corScore=score;
+				index = i;
+			}
+		}
+		//do nothing if the index isn't changed
+		if(index ==-1)
+		{
+
+		}
+		else
+		{
+			//System.out.println(" 	"+corScore + " was closest at "+index);
+			//put in centerX[index] here instead of corScore
+			ave.xIn(centerX[index]);
+			ave.yIn(centerY[index]);
+		}
+    }
+    public double[] input(double[] length, double width[], double[] x, double[] y, double[] a)
+    {
+    	int index =-1;
+		double score =0;
+		//calibrate this corScore value
+		double corScore=1;
+		//replace this loop with a loop to look through length and make score
+		//length[i]/width[i]
+		for(int i=0; i<length.length; i++)
+		{
+			score = length[i]/width[i];
+			if(Math.abs(score-1.4)<Math.abs(corScore-1.4))
+			{
+				corScore=score;
+				index = i;
+			}
+		}
+		//do nothing if the index isn't changed
+		if(index ==-1)
+		{
+
+		}
+		else
+		{
+			//System.out.println(" 	"+corScore + " was closest at "+index);
+			//put in centerX[index] here instead of corScore
+			ave.xIn(x[index]);
+			ave.yIn(y[index]);
+			ave.areaIn(a[index]);
+		}
+    	double[] def = {ave.getAverage("x"),ave.getAverage("y"), ave.getAverage("area")};
+    	return def;
+    }
     public void cameraUI()
     {
     	//Starts USB camera
@@ -367,78 +513,6 @@ public class Robot extends IterativeRobot {
     	
     }
     //Automatically aligns with high goal (untested method)
-    public void autoAlign(double yCur, double xCur, double areaCur)
-    {
-    	//use if statements so the index is updated with every move, and it is more effecient
-    	/* check to see if the robot is out of alignment
-    	* I will need to determine the expected percent error
-    	* from testing*/
-    	
-    	//Calibration values
-    	double xCal = 156;
-    	double yCal = 31;
-    	double areaCal=10;
-    	if(Math.abs(xCur-xCal)/xCal>.05)
-    	{
-    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
-    		if(xCur-xCal>0)
-    		{
-    			right.drive(-.2);
-    			left.drive(-.2);
-    			SmartDashboard.putString("vision", "left");
-    		}
-    		else if(xCur-xCal<0)
-    		{
-    			right.drive(.2);
-    			left.drive(.2);
-    			SmartDashboard.putString("vision", "right");
-    		}
-    	}
-    	else
-    	{
-    		right.drive(0);
-    		left.drive(0);
-    	}
-    	if((yCur-yCal)>0)
-    	{
-    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
-    		// becuase this value needs to be about 1
-    		
-    		//find where (0,0) is 
-    		right.drive(-.3);
-    		left.drive(.3);
-    		SmartDashboard.putString("vision", "forward");
-    	}
-    	else if(yCur-yCal<0/*again, check (0,0) spot*/)	
-    	{
-    		right.drive(.3);
-    		left.drive(-.3);
-    		SmartDashboard.putString("vision", "back");
-    	}
-    	else
-    	{
-    		right.drive(0);
-    		left.drive(0);
-    	}
-    	if((Math.abs(xCur-xCal)/xCal)<.05 && Math.abs((yCur-yCal)/yCal)<.05)
-    	{
-    		if(areaCur>areaCal)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
-    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
-    		{
-    			//fire the bloody thing
-    			SmartDashboard.putString("vision", "fire");
-    			right.drive(0);
-    			left.drive(0);
-    			shooter.shoot(false,true);
-    		}
-    		else
-    		{
-    			SmartDashboard.putString("vision", "go forward");
-    			right.drive(-.2);
-    			left.drive(.2);
-    		}
-    	}
-    }
     
     //Prints out relevant data on the smartdashboard
     public void printUI(double yCur, double xCur)
@@ -545,4 +619,78 @@ public class Robot extends IterativeRobot {
 	    	}
     	}
     }
+    
+    public void autoAlign(double yCur, double xCur, double areaCur)
+    {
+    	/*
+    	//use if statements so the index is updated with every move, and it is more effecient
+    	 check to see if the robot is out of alignment
+    	I will need to determine the expected percent error
+    	 from testing
+    	
+    	//Calibration values
+    	double xCal = 156;
+    	double yCal = 31;
+    	double areaCal=10;
+    	if(Math.abs(xCur-xCal)/xCal>.05)
+    	{
+    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
+    		if(xCur-xCal>0)
+    		{
+    			right.drive(-.2);
+    			left.drive(-.2);
+    			SmartDashboard.putString("vision", "left");
+    		}
+    		else if(xCur-xCal<0)
+    		{
+    			right.drive(.2);
+    			left.drive(.2);
+    			SmartDashboard.putString("vision", "right");
+    		}
+    	}
+    	else
+    	{
+    		right.drive(0);
+    		left.drive(0);
+    	}
+    	if((yCur-yCal)>0)
+    	{
+    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
+    		// becuase this value needs to be about 1
+    		
+    		//find where (0,0) is 
+    		right.drive(-.3);
+    		left.drive(.3);
+    		SmartDashboard.putString("vision", "forward");
+    	}
+    	else if(yCur-yCal<0again, check (0,0) spot)	
+    	{
+    		right.drive(.3);
+    		left.drive(-.3);
+    		SmartDashboard.putString("vision", "back");
+    	}
+    	else
+    	{
+    		right.drive(0);
+    		left.drive(0);
+    	}
+    	if((Math.abs(xCur-xCal)/xCal)<.05 && Math.abs((yCur-yCal)/yCal)<.05)
+    	{
+    		if(areaCur>areaCal)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
+    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
+    		{
+    			//fire the bloody thing
+    			SmartDashboard.putString("vision", "fire");
+    			right.drive(0);
+    			left.drive(0);
+    			shooter.shoot(false,true);
+    		}
+    		else
+    		{
+    			SmartDashboard.putString("vision", "go forward");
+    			right.drive(-.2);
+    			left.drive(.2);
+    		}
+    	}
+    }*/
 }
