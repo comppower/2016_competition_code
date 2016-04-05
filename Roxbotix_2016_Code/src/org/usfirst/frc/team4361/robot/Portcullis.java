@@ -20,41 +20,6 @@ public class Portcullis {
 		timer = new Timer();
 	}
 	
-	/*public void liftCom(int val)
-	{
-		if(val==0 && pos != 0 && !move)
-    	{
-    		CAN.set(.7);
-    		pos = 0;
-    		move = true;
-    	}
-		else if(val==180 && pos != 1 && !move)
-    	{
-    		CAN.set(-.7);
-    		pos = 1;
-    		move = true;
-    		timer.start();
-    	}
-		
-		if(timer.get() >= 2)
-		{
-			CAN.set(0);
-    		move = false;
-    		timer.stop();
-    		timer.reset();
-		}
-		if(LTS.get() && pos == 0)
-		{
-			CAN.set(0);
-    		move = false;
-    	}
-		
-		if(pos == 0)
-			light.set(Relay.Value.kForward);
-		else
-			light.set(Relay.Value.kOff);
-	}*/
-	
 	public void lift(int val)
 	{
 		//check negative and positive values

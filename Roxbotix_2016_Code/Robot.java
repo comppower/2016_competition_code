@@ -252,11 +252,15 @@ public class Robot extends IterativeRobot {
     		change = true;
     	
     	//perfect rotation and drive code
-		if (stick[0].getRawButton(4)) {
-			if (stick0Y < -.07 || stick0Y > .07) {
+		if (stick[0].getRawButton(4)) 
+		{
+			if (stick0Y < -.07 || stick0Y > .07) 
+			{
 				right.drive(stick0Y * drive);
 				left.drive(-stick0Y * drive);
-			} else {
+			} 
+			else 
+			{
 				right.drive(0);
 				left.drive(0);
 			}
@@ -309,7 +313,8 @@ public class Robot extends IterativeRobot {
     			right.drive(-speed*1.25);
     		}
     	}
-
+		
+		//Perfect forward drive
 		else if (stick[0].getRawButton(6)) 
 		{
 			if (stick0X < -.07 || stick0X > .07) 
@@ -323,6 +328,7 @@ public class Robot extends IterativeRobot {
 				left.drive(0);
 			}
 		} 
+		//standard drive
 		else 
 		{
 			// Drives Chassis
@@ -378,46 +384,7 @@ public class Robot extends IterativeRobot {
     /**
      * This function is called periodically during test mode
      */
-    public void cal(double[] length, double[] width, double[] centerX, double[] centerY)
-    {
-    	//check to see if the array is full already
-    	ave.cal=true;
-		for(int i=0; i<ave.centerX.length; i++)
-		{
-			if(ave.centerX[i]==-1)
-			{
-				ave.cal=false;
-			}
-		}
-		//intializes values to look for the best hit
-    	int index =-1;
-		double score =0;
-		//calibrate this corScore value
-		double corScore=1;
-		//replace this loop with a loop to look through length and make score
-		//length[i]/width[i]
-		for(int i=0; i<length.length; i++)
-		{
-			score = length[i]/width[i];
-			if(Math.abs(score-1.4)<Math.abs(corScore-1.4))
-			{
-				corScore=score;
-				index = i;
-			}
-		}
-		//do nothing if the index isn't changed
-		if(index ==-1)
-		{
-
-		}
-		else
-		{
-			//System.out.println(" 	"+corScore + " was closest at "+index);
-			//put in centerX[index] here instead of corScore
-			ave.xIn(centerX[index]);
-			ave.yIn(centerY[index]);
-		}
-    }
+    
     public void cal(double[] length, double[] width, double[] centerX, double[] centerY)
     {
     	//check to see if the array is full already
@@ -512,7 +479,6 @@ public class Robot extends IterativeRobot {
     {
     	
     }
-    //Automatically aligns with high goal (untested method)
     
     //Prints out relevant data on the smartdashboard
     public void printUI(double yCur, double xCur)
