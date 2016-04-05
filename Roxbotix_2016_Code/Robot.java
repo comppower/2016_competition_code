@@ -181,7 +181,7 @@ public class Robot extends IterativeRobot {
 	 */
     public void autonomousInit() {
     	autoSelected = (String) chooser.getSelected();
-    	secSelected = (String) sec.getSelected();
+    	secSelected = (String) sec.getSelected();//Merge
 //		autoSelected = SmartDashboard.getString("Auto Selector", defaultAuto);
 		System.out.println("Auto selected: " + autoSelected);
     }
@@ -225,8 +225,15 @@ public class Robot extends IterativeRobot {
             break;
     	}
     	
-    	switch(){
+    	//Merge
+    	switch(secSelected){
+    	case "High":
+    	//auto.
+    		break;
     	
+    	case "None":
+    	default:
+    		break;
     	}
     }
 
