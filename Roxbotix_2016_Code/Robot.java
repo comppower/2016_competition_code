@@ -45,7 +45,7 @@ public class Robot extends IterativeRobot {
     
     private Shooter shooter;
     
-    private Digit digit;
+    private TargetFollow track;
     
     private DigitalInput[] limitSwitch;
     
@@ -54,11 +54,6 @@ public class Robot extends IterativeRobot {
     double drive;
     boolean change;
     
-    //GRIP 
-    NetworkTable table;
-	final double[] defaultVal={0.0};
-	Tracking track;
-    WeightedAverage ave; 
     private Encoder lEnc, rEnc;
     
     //USB Camera
@@ -87,9 +82,6 @@ public class Robot extends IterativeRobot {
     	{
     		limitSwitch[i] = new DigitalInput(i);
     	}
-     	
-    	//Roxbotix Variables
-        digit = new Digit();
         
         stick = new Joystick[3];
         for(int i = 0; i < stick.length; i++)
@@ -123,22 +115,14 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	
+    	track = new TargetFollow(left, right);
+    	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
     	stick1X = stick[1].getAxis(Joystick.AxisType.kX);
     	stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
     	
-    	digit.print("4361");
     	change = true;
-    	
-    	
-    	//GRIP
-    	
-
-        //set up corrected centers for the robot
-        table = NetworkTable.getTable("GRIP/myContoursReport");
-        track = new Tracking(133,105);
-        ave = new WeightedAverage(10,700);
         
     	//Default Variables
     	chooser = new SendableChooser();
@@ -282,53 +266,11 @@ public class Robot extends IterativeRobot {
 				left.drive(0);
 			}
 		}
-		//tracking portion
-        double[] deafultVal = new double[0];
-    	double[] centerX = table.getNumberArray("centerX", deafultVal);
-    	double[] centerY = table.getNumberArray("centerY", deafultVal);
-    	double[] width = table.getNumberArray("width",deafultVal);
-    	double[] length = table.getNumberArray("height", deafultVal);
-    	double[] area = table.getNumberArray("area",deafultVal);
-    	String dir = "";
-    	double speed=.15;
+		
     	
-    	else if(centerX.length>0&&stick[1].getRawButton(1))
+    	else if(stick[1].getRawButton(1))
     	{
-    		if(!ave.cal)
-    		{
-    			cal(length, width, centerX, centerY);
-    			System.out.println("Calibrating");
-    		}
-    		else
-    		{
-    			double[] values = input(length, width, centerX, centerY, area);
-    			 dir = track.track(values[0], values[1]);
-    			 filter = values[2];
-    			 System.out.println(dir);
-    		}
-    		
-    		if(dir.equals("left"))
-    		{
-    			//1.5 to correct for slower turn
-    			left.drive(-speed);
-    			right.drive(-speed);
-    
-    		}
-    		if(dir.equals("right"))
-    		{
-    			left.drive(speed);
-    			right.drive(speed);
-    		}
-    		if(dir.equals("forward"))
-    		{
-    			left.drive(-speed*1.25);
-    			right.drive(speed);
-    		}
-    		if(dir.equals("back"))
-    		{
-    			left.drive(speed*1.25);
-    			right.drive(-speed*1.25);
-    		}
+    		track.start();
     	}
 		
 		//Perfect forward drive
@@ -380,21 +322,7 @@ public class Robot extends IterativeRobot {
     	shooter.indexAuto(stick[0].getRawButton(1));
     	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));
     	
-    	//Untested
- 
-    	       
-        //Prints out UI (untested code)
-        if(centerXs.length>0&&centerYs.length>0)
-        {
-        	printUI(centerXs[0], centerYs[0]);
-        }
-        else
-        {
-        	printUI(-1,-1);
-        }
-        //end untested code
-       
-
+        track.printUI2();
 
     }
     
@@ -402,79 +330,6 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during test mode
      */
     
-    public void cal(double[] length, double[] width, double[] centerX, double[] centerY)
-    {
-    	//check to see if the array is full already
-    	ave.cal=true;
-		for(int i=0; i<ave.centerX.length; i++)
-		{
-			if(ave.centerX[i]==-1)
-			{
-				ave.cal=false;
-			}
-		}
-		//intializes values to look for the best hit
-    	int index =-1;
-		double score =0;
-		//calibrate this corScore value
-		double corScore=1;
-		//replace this loop with a loop to look through length and make score
-		//length[i]/width[i]
-		for(int i=0; i<length.length; i++)
-		{
-			score = length[i]/width[i];
-			if(Math.abs(score-1.4)<Math.abs(corScore-1.4))
-			{
-				corScore=score;
-				index = i;
-			}
-		}
-		//do nothing if the index isn't changed
-		if(index ==-1)
-		{
-
-		}
-		else
-		{
-			//System.out.println(" 	"+corScore + " was closest at "+index);
-			//put in centerX[index] here instead of corScore
-			ave.xIn(centerX[index]);
-			ave.yIn(centerY[index]);
-		}
-    }
-    public double[] input(double[] length, double width[], double[] x, double[] y, double[] a)
-    {
-    	int index =-1;
-		double score =0;
-		//calibrate this corScore value
-		double corScore=1;
-		//replace this loop with a loop to look through length and make score
-		//length[i]/width[i]
-		for(int i=0; i<length.length; i++)
-		{
-			score = length[i]/width[i];
-			if(Math.abs(score-1.4)<Math.abs(corScore-1.4))
-			{
-				corScore=score;
-				index = i;
-			}
-		}
-		//do nothing if the index isn't changed
-		if(index ==-1)
-		{
-
-		}
-		else
-		{
-			//System.out.println(" 	"+corScore + " was closest at "+index);
-			//put in centerX[index] here instead of corScore
-			ave.xIn(x[index]);
-			ave.yIn(y[index]);
-			ave.areaIn(a[index]);
-		}
-    	double[] def = {ave.getAverage("x"),ave.getAverage("y"), ave.getAverage("area")};
-    	return def;
-    }
     public void cameraUI()
     {
     	//Starts USB camera
@@ -497,111 +352,6 @@ public class Robot extends IterativeRobot {
     	
     }
     
-    //Prints out relevant data on the smartdashboard
-    public void printUI(double yCur, double xCur)
-    {
-    	//supply correct x and y vals for calibration
-    	double xCal = 156;
-    	double yCal = 31;
-    	SmartDashboard.putDouble("ROTATION", (xCal-xCur)/xCal);
-    	SmartDashboard.putDouble("ELEVATION", (yCal-yCur)/yCal);
-    	SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
-    	SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
-    }
-    
-    //not working
-    public void track()
-    {
-    	System.out.println(corArea);
-
-    	double xCal = 133;// someVal
-    	double yCal = 272; // someVal
-    	area= table.getNumberArray("area", defaultVal);
-        centerYs= table.getNumberArray("centerY", defaultVal);
-        centerXs= table.getNumberArray("centerX", defaultVal);
-        valueUpdate = false;
-	    if(!found)//locate the target
-	    {
-	    	area= table.getNumberArray("area", defaultVal);
-	        centerYs= table.getNumberArray("centerY", defaultVal);
-	        centerXs= table.getNumberArray("centerX", defaultVal);
-	    	//System.out.print(Math.abs(corArea-area[0])/corArea + ": area diff ");
-	        
-	    	System.out.println("locating target, and lifting shooter");
-	
-	    	for(int i=0; i<area.length; i++)
-	    	{
-	    		if((Math.abs(corArea-area[i])/corArea)<filter)//determine the percent error
-	    		{
-	    			corArea=area[i];
-	    			centerX=centerXs[i];
-	    	    	centerY=centerYs[i];
-	    			found = true;
-	    		}
-	    		else
-	    		{
-	    			System.out.println("target not found, rotating");
-	    		}
-	    	}
-			filter +=.1;
-	    		
-	    }
-	
-    	if(found&&area.length>0)
-    	{
-    		//make sure the robot sees something, and update the target data
-    		corArea=area[0];
-    		centerX=centerXs[0];
-    		centerY=centerYs[0];
-    		valueUpdate =true;
-    	}
-    	if(!valueUpdate)
-    	{
-    		System.out.println("target lost");
-    	}
-    
-    	if(valueUpdate)
-    	{
-	    	//System.out.println(centerX + "," + centerY);
-	    	if(Math.abs(centerX-xCal)/xCal>.05)//use if statements so the index is updated with every move, and it is more effecient
-	    	/* check to see if the robot is out of alignment
-	    	* I will need to determine the expected percent error
-	    	* from testing*/
-	    	{
-	    		System.out.println("rotating");
-	    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
-	    		if(centerX-xCal>0)
-	    			SmartDashboard.putString("visionX", "Go Right");
-	    		else if(centerX-xCal<0)
-	    			SmartDashboard.putString("visionX", "Go Left");
-	    		else
-	    			SmartDashboard.putString("visionX", "Good");
-	    	}
-	    	if((Math.abs(centerY-yCal)/yCal)>.05)
-	    	{
-	    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
-	    		// becuase this value needs to be about 1
-	    		System.out.println("adjusting shooter");
-	    		//System.out.print(Math.abs(centerY-yCal)/yCal);
-	    		if(centerY-yCal>0)
-	    			SmartDashboard.putString("visionY", "Go Down");
-	    		else if(centerY-yCal<0)
-	    			SmartDashboard.putString("visionY", "Go Up");
-	    		else
-	    			SmartDashboard.putString("visionY", "Good");
-	    	}
-	    	if((Math.abs(centerX-xCal)/xCal)<.05 && Math.abs((centerY-yCal)/yCal)<.05)
-	    	{
-	    		if(corArea>shootArea)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
-	    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
-	    		{
-	    			//fire the bloody thing
-	    			System.out.println("fire");
-	    		}
-	    		System.out.println("moving forward");
-	    	}
-    	}
-    }
     
     public void autoAlign(double yCur, double xCur, double areaCur)
     {

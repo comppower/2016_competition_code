@@ -16,6 +16,16 @@ public class Shooter {
 	
 	private Relay[] light;
 
+	public Shooter(CANTalon[] SHT, CANTalon[] LIFT, CANTalon[] IND, Relay[] light)
+	{
+		this.SHT = SHT;
+		this.LIFT = LIFT;
+		this.IND = IND;
+		indTimer = new Timer();
+		
+		this.light = light;
+	}
+	
 	public Shooter(CANTalon[] SHT, CANTalon[] LIFT, CANTalon[] IND, DigitalInput[] LTS, Relay[] light)
 	{
 		this.SHT = SHT;
