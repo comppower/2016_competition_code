@@ -174,7 +174,7 @@ public class TargetFollow {
     	SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
     	SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
     }
-    public void printUI2()
+    public void printUI()
     {
     	 //Prints out UI (untested code)
         if(centerX.length>0&&centerY.length>0)

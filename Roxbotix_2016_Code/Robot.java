@@ -322,7 +322,7 @@ public class Robot extends IterativeRobot {
     	shooter.indexAuto(stick[0].getRawButton(1));
     	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));
     	
-        track.printUI2();
+        track.printUI();
 
     }
     
