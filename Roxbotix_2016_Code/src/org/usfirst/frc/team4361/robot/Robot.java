@@ -172,6 +172,7 @@ public class Robot extends IterativeRobot {
 
     /**
      * This function is called periodically during autonomous
+     * t
      */
     public void autonomousPeriodic() {
     	switch(autoSelected) {
