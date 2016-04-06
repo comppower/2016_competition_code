@@ -28,8 +28,8 @@ import edu.wpi.first.wpilibj.Relay;
  */
 public class Robot extends IterativeRobot {
 	private final String defaultAuto = "Drive to Obstacle";
-    private String autoSelected;
-    private SendableChooser chooser;
+    private String autoSelected, secSelected;
+    private SendableChooser chooser, sec;
 	
     //Roxbotix Variables
     private Autonomous auto;
@@ -45,7 +45,7 @@ public class Robot extends IterativeRobot {
     
     private Shooter shooter;
     
-    private Digit digit;
+    private TargetFollow track;
     
     private DigitalInput[] limitSwitch;
     
@@ -54,21 +54,6 @@ public class Robot extends IterativeRobot {
     double drive;
     boolean change;
     
-    //GRIP 
-    NetworkTable table;
-	double corArea; // or expected intial value
-	boolean found;
-	boolean valueUpdate;
-	int index;
-	final double[] defaultVal={0.0};
-	double[] area;
-	double[] centerXs;
-	double[] centerYs;
-	double centerX;
-	double centerY;
-	double filter;
-	double shootArea; // need to calculate smallest possible area to make
-							// shot from
     private Encoder lEnc, rEnc;
     
     //USB Camera
@@ -97,9 +82,6 @@ public class Robot extends IterativeRobot {
     	{
     		limitSwitch[i] = new DigitalInput(i);
     	}
-     	
-    	//Roxbotix Variables
-        digit = new Digit();
         
         stick = new Joystick[3];
         for(int i = 0; i < stick.length; i++)
@@ -133,26 +115,14 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	
+    	track = new TargetFollow(left, right);
+    	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
     	stick1X = stick[1].getAxis(Joystick.AxisType.kX);
     	stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
     	
-    	digit.print("4361");
     	change = true;
-    	
-    	
-    	//GRIP
-        shootArea = 185; 
-        found = false;
-        valueUpdate= true;
-        //set up corrected centers for the robot
-        filter=1;
-        table = NetworkTable.getTable("GRIP/myContoursReport");
-        corArea= 200;
-        area= table.getNumberArray("area", defaultVal);
-        centerYs= table.getNumberArray("centerY", defaultVal);
-        centerXs= table.getNumberArray("centerX", defaultVal);
         
     	//Default Variables
     	chooser = new SendableChooser();
@@ -167,7 +137,12 @@ public class Robot extends IterativeRobot {
         chooser.addObject("Rock Wall", "rockWall");
         chooser.addObject("Rough Terrain", "roughTerrain");
         
+        sec = new SendableChooser();
+        sec.addDefault("None", "none");
+        
         SmartDashboard.putData("Auto choices", chooser);
+        SmartDashboard.putData("Secondary", sec);
+        SmartDashboard.putNumber("PosGet", 0);
         
         //USB CAM INIT
         frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_U8, 0);
@@ -190,6 +165,7 @@ public class Robot extends IterativeRobot {
 	 */
     public void autonomousInit() {
     	autoSelected = (String) chooser.getSelected();
+    	secSelected = (String) sec.getSelected();//Merge
 //		autoSelected = SmartDashboard.getString("Auto Selector", defaultAuto);
 		System.out.println("Auto selected: " + autoSelected);
     }
@@ -232,6 +208,17 @@ public class Robot extends IterativeRobot {
     	auto.defaultGoToObstacle();
             break;
     	}
+    	
+    	//Merge
+    	switch(secSelected){
+    	case "High":
+    	auto.high((int) SmartDashboard.getNumber("posGet"), autoSelected);
+    		break;
+    	
+    	case "None":
+    	default:
+    		break;
+    	}
     }
 
     /**
@@ -239,20 +226,7 @@ public class Robot extends IterativeRobot {
      */
     public void teleopPeriodic()
     {
-    	//Starts USB camera
-		NIVision.IMAQdxStartAcquisition(session);
-		//Instantiate rectangles (fix the location of the rectangles
-		NIVision.Rect rightRect = new NIVision.Rect(99,440,176,13);
-		NIVision.Rect midRect = new NIVision.Rect(135,132,25,25);
-		//Draw rectangles on screen
-		NIVision.IMAQdxGrab(session, frame, 1);
-		NIVision.imaqDrawShapeOnImage(frame, frame, rightRect,
-				DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
-		NIVision.imaqDrawShapeOnImage(frame, frame, midRect,
-				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
-		//display the new image
-		CameraServer.getInstance().setImage(frame);
-
+    	cameraUI();
 		// Sets joystick values
 		stick0X = stick[0].getAxis(Joystick.AxisType.kX);
 		stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
@@ -260,18 +234,16 @@ public class Robot extends IterativeRobot {
 		stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
 		
 		//sets vision tracking vals
-		area= table.getNumberArray("area", defaultVal);
-        centerYs= table.getNumberArray("centerY", defaultVal);
-        centerXs= table.getNumberArray("centerX", defaultVal);
-    	
 
+    	
+        //adjusts gear box
     	SmartDashboard.putDouble("gear", drive);
     	if(drive == 1 && stick[0].getRawButton(3)&&change)
     	{
-    		drive = .5;
+    		drive = .75;
     		change = false;
     	}
-    	else if(drive == .5 && stick[0].getRawButton(3)&&change)
+    	else if(drive == .75 && stick[0].getRawButton(3)&&change)
     	{
     		drive = 1;
     		change = false;
@@ -280,106 +252,114 @@ public class Robot extends IterativeRobot {
     	if(!stick[0].getRawButton(3))
     		change = true;
     	
-    	if(stick[1].getRawButton(4)&&area.length>0)
+    	//perfect rotation and drive code
+		if (stick[0].getRawButton(4)) 
+		{
+			if (stick0Y < -.07 || stick0Y > .07) 
+			{
+				right.drive(stick0Y * drive);
+				left.drive(-stick0Y * drive);
+			} 
+			else 
+			{
+				right.drive(0);
+				left.drive(0);
+			}
+		}
+		
+    	
+    	else if(stick[1].getRawButton(1))
     	{
-            //Teleop Auto Routine
-    		area= table.getNumberArray("area", defaultVal);
-            centerYs= table.getNumberArray("centerY", defaultVal);
-            centerXs= table.getNumberArray("centerX", defaultVal);
-    		autoAlign(centerXs[0], centerYs[0], area[0]);
+    		track.track();
     	}
-    	//untested code
-    	else
-    	{
-    		if(stick[0].getRawButton(4))
-    		{
-    			if(stick0Y<-.07 || stick0Y>.07)
-    			{
-		    		right.drive(stick0Y*drive);
-		    		left.drive(-stick0Y*drive);
-    			}
-		    	else
-		    	{
-		    		right.drive(0);
-		    		left.drive(0);
-		    	}
-    		}
-    		else if(stick[0].getRawButton(6))
-    		{
-    			if(stick0X<-.07 || stick0X>.07)
-    			{
-		    		right.drive(stick0X*drive);
-		    		left.drive(stick0X*drive);
-    			}
-		    	else
-		    	{
-		    		right.drive(0);
-		    		left.drive(0);
-		    	}
-    		}
-    		else
-    		{
-		    	//Drives Chassis
-		    	if(stick0Y<-.07 || stick0Y>.07)
-		    		right.drive(stick0Y*drive);
-		    	else
-		    		right.drive(0);
-		    	if(stick1Y<-.07 || stick1Y>.07)
-		    		left.drive(-stick1Y*drive);
-		    	else
-		    		left.drive(0);
-    		}
-    		//end untested code
+		
+		//Perfect forward drive
+		else if (stick[0].getRawButton(6)) 
+		{
+			if (stick0X < -.07 || stick0X > .07) 
+			{
+				right.drive(stick0X * drive);
+				left.drive(stick0X * drive);
+			} 
+			else 
+			{
+				right.drive(0);
+				left.drive(0);
+			}
+		} 
+		//standard drive
+		else 
+		{
+			// Drives Chassis
+			if (stick0Y < -.07 || stick0Y > .07)
+				right.drive(stick0Y * drive);
+			else
+				right.drive(0);
+			if (stick1Y < -.07 || stick1Y > .07)
+				left.drive(-stick1Y * drive);
+			else
+				left.drive(0);
+		}
+    	//end untested code
 	    	
-	    	//Drives shooter
-	    	//shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
-	    	shooter.liftSim(stick[2].getAxis(Joystick.AxisType.kY));
-	    	shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
-    	}
+	    //Drives shooter
+	    //shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
+		if(stick[2].getIsXbox())
+		{
+			shooter.liftSim(stick[2].getRawAxis(1));
+			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(6));
+			port.lift(stick[2].getRawAxis(5));
+		}
+		else
+		{
+			shooter.liftSim(stick[2].getAxis(Joystick.AxisType.kY));
+			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
+		   	port.lift(stick[2].getPOV());
+		}
+
     	
     	//Drives indexer
     	shooter.indexAuto(stick[0].getRawButton(1));
     	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));
     	
-    	//Untested
-    	port.lift(stick[2].getPOV());
-    	//Untested
-    	
-    	//Timer.delay(0.005);		// wait for a motor update time
-        /**
-         * could be a problem section, remove to reduce lag my man
-         */
-    	//NIVision.IMAQdxStopAcquisition(session);
-    	
-        
-        //Prints out UI (untested code)
-        if(centerXs.length>0&&centerYs.length>0)
-        {
-        	printUI(centerXs[0], centerYs[0]);
-        }
-        else
-        {
-        	printUI(-1,-1);
-        }
-        //end untested code
-        
+        track.printUI();
 
     }
     
     /**
      * This function is called periodically during test mode
      */
+    
+    public void cameraUI()
+    {
+    	//Starts USB camera
+    	NIVision.IMAQdxStartAcquisition(session);
+    	//Instantiate rectangles (fix the location of the rectangles
+    	NIVision.Rect rightRect = new NIVision.Rect(99,440,176,13);
+    	NIVision.Rect midRect = new NIVision.Rect(135,132,25,25);
+    	//Draw rectangles on screen
+    	NIVision.IMAQdxGrab(session, frame, 1);
+    	NIVision.imaqDrawShapeOnImage(frame, frame, rightRect,
+    			DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
+    	NIVision.imaqDrawShapeOnImage(frame, frame, midRect,
+    				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
+    	//display the new image
+    	CameraServer.getInstance().setImage(frame);
+
+    }
     public void testPeriodic() 
     {
     	
     }
-    //Automatically aligns with high goal (untested method)
+    
+    
     public void autoAlign(double yCur, double xCur, double areaCur)
     {
+    	/*
     	//use if statements so the index is updated with every move, and it is more effecient
-    	/* check to see if the robot is out of alignment
-    	* I will need to determine the expected percent error
-    	* from testing*/
+    	 check to see if the robot is out of alignment
+    	I will need to determine the expected percent error
+    	 from testing
     	
     	//Calibration values
     	double xCal = 156;
@@ -416,7 +396,7 @@ public class Robot extends IterativeRobot {
     		left.drive(.3);
     		SmartDashboard.putString("vision", "forward");
     	}
-    	else if(yCur-yCal<0/*again, check (0,0) spot*/)	
+    	else if(yCur-yCal<0again, check (0,0) spot)	
     	{
     		right.drive(.3);
     		left.drive(-.3);
@@ -445,110 +425,6 @@ public class Robot extends IterativeRobot {
     			left.drive(.2);
     		}
     	}
-    }
-    
-    //Prints out relevant data on the smartdashboard
-    public void printUI(double yCur, double xCur)
-    {
-    	//supply correct x and y vals for calibration
-    	double xCal = 156;
-    	double yCal = 31;
-    	SmartDashboard.putDouble("ROTATION", (xCal-xCur)/xCal);
-    	SmartDashboard.putDouble("ELEVATION", (yCal-yCur)/yCal);
-    	SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
-    	SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
-    }
-    
-    public void track()
-    {
-    	System.out.println(corArea);
-
-    	double xCal = 133;// someVal
-    	double yCal = 272; // someVal
-    	area= table.getNumberArray("area", defaultVal);
-        centerYs= table.getNumberArray("centerY", defaultVal);
-        centerXs= table.getNumberArray("centerX", defaultVal);
-        valueUpdate = false;
-	    if(!found)//locate the target
-	    {
-	    	area= table.getNumberArray("area", defaultVal);
-	        centerYs= table.getNumberArray("centerY", defaultVal);
-	        centerXs= table.getNumberArray("centerX", defaultVal);
-	    	//System.out.print(Math.abs(corArea-area[0])/corArea + ": area diff ");
-	        
-	    	System.out.println("locating target, and lifting shooter");
-	
-	    	for(int i=0; i<area.length; i++)
-	    	{
-	    		if((Math.abs(corArea-area[i])/corArea)<filter)//determine the percent error
-	    		{
-	    			corArea=area[i];
-	    			centerX=centerXs[i];
-	    	    	centerY=centerYs[i];
-	    			found = true;
-	    		}
-	    		else
-	    		{
-	    			System.out.println("target not found, rotating");
-	    		}
-	    	}
-			filter +=.1;
-	    		
-	    }
-	
-    	if(found&&area.length>0)
-    	{
-    		//make sure the robot sees something, and update the target data
-    		corArea=area[0];
-    		centerX=centerXs[0];
-    		centerY=centerYs[0];
-    		valueUpdate =true;
-    	}
-    	if(!valueUpdate)
-    	{
-    		System.out.println("target lost");
-    	}
-    
-    	if(valueUpdate)
-    	{
-	    	//System.out.println(centerX + "," + centerY);
-	    	if(Math.abs(centerX-xCal)/xCal>.05)//use if statements so the index is updated with every move, and it is more effecient
-	    	/* check to see if the robot is out of alignment
-	    	* I will need to determine the expected percent error
-	    	* from testing*/
-	    	{
-	    		System.out.println("rotating");
-	    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
-	    		if(centerX-xCal>0)
-	    			SmartDashboard.putString("visionX", "Go Right");
-	    		else if(centerX-xCal<0)
-	    			SmartDashboard.putString("visionX", "Go Left");
-	    		else
-	    			SmartDashboard.putString("visionX", "Good");
-	    	}
-	    	if((Math.abs(centerY-yCal)/yCal)>.05)
-	    	{
-	    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
-	    		// becuase this value needs to be about 1
-	    		System.out.println("adjusting shooter");
-	    		//System.out.print(Math.abs(centerY-yCal)/yCal);
-	    		if(centerY-yCal>0)
-	    			SmartDashboard.putString("visionY", "Go Down");
-	    		else if(centerY-yCal<0)
-	    			SmartDashboard.putString("visionY", "Go Up");
-	    		else
-	    			SmartDashboard.putString("visionY", "Good");
-	    	}
-	    	if((Math.abs(centerX-xCal)/xCal)<.05 && Math.abs((centerY-yCal)/yCal)<.05)
-	    	{
-	    		if(corArea>shootArea)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
-	    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
-	    		{
-	    			//fire the bloody thing
-	    			System.out.println("fire");
-	    		}
-	    		System.out.println("moving forward");
-	    	}
-    	}
+    }*/
     }
 }
