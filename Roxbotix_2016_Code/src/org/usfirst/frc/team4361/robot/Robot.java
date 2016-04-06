@@ -82,10 +82,10 @@ public class Robot extends IterativeRobot {
     		light[i] = new Relay(i);
     	}
     	
-    	limitSwitch = new DigitalInput[3];
+    	limitSwitch = new DigitalInput[2];
     	for(int i = 0; i < limitSwitch.length; i++)
     	{
-    		limitSwitch[i] = new DigitalInput(i);
+    		limitSwitch[1] = new DigitalInput(1);
     	}
      	
     	//Roxbotix Variables
