@@ -270,7 +270,7 @@ public class Robot extends IterativeRobot {
     	
     	else if(stick[1].getRawButton(1))
     	{
-    		track.start();
+    		track.track();
     	}
 		
 		//Perfect forward drive

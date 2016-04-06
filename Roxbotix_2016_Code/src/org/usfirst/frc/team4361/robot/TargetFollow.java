@@ -40,7 +40,7 @@ public class TargetFollow {
 	   	 speed=.15;
 	}
 	
-	public void start()
+	public void track()
 	{
 		deafultVal = new double[0];
 	   	 centerX = table.getNumberArray("centerX", deafultVal);
