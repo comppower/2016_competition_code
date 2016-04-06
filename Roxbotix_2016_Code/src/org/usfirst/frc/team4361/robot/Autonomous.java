@@ -19,6 +19,8 @@ public class Autonomous{
 	
 	Encoder lEnc, rEnc;
 	
+	int minDist, maxDist;
+	
 	Portcullis port;
 	
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port)
@@ -217,8 +219,6 @@ public class Autonomous{
 	{
 		if(runNum == -1 && !hasRun)
 		{
-			int minDist, maxDist;
-			
 			if(def.equals("lowbar"))
 			{
 				minDist = 0;
@@ -234,17 +234,7 @@ public class Autonomous{
 				minDist = 0;
 				maxDist = 0;
 			}
-			else if(def.equals("ramparts"))
-			{
-				minDist = 0;
-				maxDist = 0;
-			}
 			else if(def.equals("moat"))
-			{
-				minDist = 0;
-				maxDist = 0;
-			}
-			else if(def.equals("chevelDeFrise"))
 			{
 				minDist = 0;
 				maxDist = 0;
@@ -264,17 +254,23 @@ public class Autonomous{
 		
 		if(runNum == -1)
 		{
-			
-		}
-		if(runNum == -2)
-		{
-			if(pos == 0)
+			if(pos == 1)//LowBar
+			{
+				goDistanceSec(10.2*12-maxDist, .3);
+			}
+			else if(pos >= 2 && pos <=5)
+			{
+				goDistanceSec(6*12-maxDist, .3);
+			}
+			else
 			{
 				runNum = -100;
 				return;
 			}
-			
-			else if(pos == 1)//LowBar
+		}
+		if(runNum == -2)
+		{
+			if(pos == 1)//LowBar
 			{
 				
 			}
@@ -345,6 +341,61 @@ public class Autonomous{
 				
 				hasRun = false;
 				runNum++;
+				timeNeeded = 0;
+				
+				timer.stop();
+				timer.reset();
+			}
+		}
+	}
+	private void goDistanceSec(double dist, double speed)
+	{
+		if(!hasRun)
+		{
+			right.drive(-speed);
+			left.drive(speed);
+		}
+		
+		if(isEnc)
+		{
+			if(!hasRun)
+			{
+				lEnc.reset();
+				rEnc.reset();
+				hasRun = true;
+			}
+			
+			large = Math.abs(Math.max(lEnc.getRaw(), rEnc.getRaw()));
+			
+			if(large*circumference>dist)
+			{
+				right.drive(0);
+				left.drive(0);
+				
+				hasRun = false;
+				runNum++;
+			}
+		}
+		
+		//For when the encoders break
+		else if(!isEnc)
+		{
+			double timeWarm = .5;
+			int dist2 = 0;
+			double timeNeeded = timeWarm + ((dist / circumference) / ((speed * 5310) / (60 * 12.75)));
+			if(!hasRun)
+			{
+				timer.start();
+				hasRun = true;
+			}
+			
+			if(timer.get()>timeNeeded)
+			{
+				right.drive(0);
+				left.drive(0);
+				
+				hasRun = false;
+				runNum--;
 				timeNeeded = 0;
 				
 				timer.stop();
