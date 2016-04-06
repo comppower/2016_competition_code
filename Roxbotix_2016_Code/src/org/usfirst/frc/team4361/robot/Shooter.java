@@ -62,7 +62,7 @@ public class Shooter {
 		LIFT[0].set(-val);
 		LIFT[1].set(val);
 		
-		if(!LTS[2].get())
+		/*if(!LTS[2].get())
 			light[0].set(Relay.Value.kForward);
 		else
 			light[0].set(Relay.Value.kOff);
@@ -70,7 +70,7 @@ public class Shooter {
 		if(!LTS[0].get())
 			light[1].set(Relay.Value.kForward);
 		else
-			light[1].set(Relay.Value.kOff);
+			light[1].set(Relay.Value.kOff);*/
 	}
 
 	public void shoot(boolean in, boolean out) 

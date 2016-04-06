@@ -83,7 +83,7 @@ public class Robot extends IterativeRobot {
     	}
     	
     	limitSwitch = new DigitalInput[2];
-    	for(int i = 0; i < limitSwitch.length; i++)
+    	for(int i = 1; i < limitSwitch.length; i++)
     	{
     		limitSwitch[1] = new DigitalInput(1);
     	}
