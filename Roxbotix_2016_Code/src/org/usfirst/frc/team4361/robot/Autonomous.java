@@ -272,24 +272,28 @@ public class Autonomous{
 		{
 			if(pos == 1)//LowBar
 			{
-				
+				turn(60);
 			}
 			else if(pos == 2)
 			{
-				
+				turn(60);
 			}
 			else if(pos == 3)
 			{
-				
+				turn(0);
 			}
 			else if(pos == 4)
 			{
-				
+				turn(-60);
 			}
 			else if(pos == 5)
 			{
-				
+				turn(-45);
 			}
+		}
+		if(runNum == -3)
+		{
+			track();
 		}
 	}
 	
@@ -421,24 +425,43 @@ public class Autonomous{
 		}
 	}
 	
-	private void turn(double percent)
+	private void turn(double angle)
 	{
+		double percent = Math.abs(angle)/360;
 		if(!hasRun)
 		{
 			lEnc.reset();
 			rEnc.reset();
+		}
+		if(!hasRun&&angle<0)
+		{
+			right.drive(.3);
+			left.drive(.3);
 			hasRun = true;
 		}
+		else if(!hasRun&&angle>0)
+		{
+			right.drive(-.3);
+			left.drive(-.3);
+			hasRun = true;
+		}
+		else if(!hasRun&&angle==0)
+			hasRun=true;
 		
 		large = Math.abs(Math.max(lEnc.getRaw(), rEnc.getRaw()));
 		double radius = ((27+3/8)*Math.PI);
-		if(large*circumference>radius*percent)
+		if(large*circumference>=radius*percent)
 		{
 			right.drive(0);
 			left.drive(0);
 			
 			hasRun = false;
-			runNum++;
+			runNum--;
 		}
+	}
+	
+	public void track()
+	{
+		
 	}
 }
