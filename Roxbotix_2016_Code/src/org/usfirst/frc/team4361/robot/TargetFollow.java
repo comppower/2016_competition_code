@@ -20,7 +20,9 @@ public class TargetFollow {
 	double speed=.15;
     
     Drive left, right;
-	public TargetFollow(Drive left, Drive right) {
+    Shooter shoot;
+    
+	public TargetFollow(Drive left, Drive right, Shooter shoot) {
 		//set up corrected centers for the robot
         table = NetworkTable.getTable("GRIP/myContoursReport");
         track = new Tracking(133,105);
@@ -28,6 +30,7 @@ public class TargetFollow {
         
         this.left = left;
         this.right = right;
+        this.shoot = shoot;
         
 	     //tracking portion
 	     deafultVal = new double[0];
@@ -86,6 +89,10 @@ public class TargetFollow {
 			{
 				left.drive(speed*1.25);
 				right.drive(-speed*1.25);
+			}
+			if(dir.equals("shoot"))
+			{
+				shoot.shoot(false, true);
 			}
 		}
 	}

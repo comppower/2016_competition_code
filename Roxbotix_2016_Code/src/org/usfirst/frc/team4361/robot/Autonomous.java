@@ -17,6 +17,8 @@ public class Autonomous{
 	Drive left, right;
 	Shooter shoot;
 	
+	TargetFollow follow;
+	
 	Encoder lEnc, rEnc;
 	
 	int minDist, maxDist;
@@ -42,6 +44,8 @@ public class Autonomous{
 		this.right = right;
 		this.shoot = shoot;
 		this.port = port;
+		
+		follow = new TargetFollow(left, right, shoot);
 	}
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port, Encoder lEnc, Encoder rEnc)
 	{
@@ -110,7 +114,7 @@ public class Autonomous{
 			goDistance(56, .3);
 		if(runNum == 1)
 		{
-			wait(0);
+			wait(0.0);
 			port.lift(0);
 			//shoot.lift(.5);
 		}
@@ -256,11 +260,11 @@ public class Autonomous{
 		{
 			if(pos == 1)//LowBar
 			{
-				goDistanceSec(10.2*12-maxDist, .3);
+				goDistance(10.2*12-maxDist, .3);
 			}
 			else if(pos >= 2 && pos <=5)
 			{
-				goDistanceSec(6*12-maxDist, .3);
+				goDistance(6*12-maxDist, .3);
 			}
 			else
 			{
@@ -293,8 +297,25 @@ public class Autonomous{
 		}
 		if(runNum == -3)
 		{
-			track();
+			wait(.3);
+			shoot.liftSim(-1);
 		}
+		if(runNum == -4)
+		{
+			shoot.liftSim(0);
+			follow.track();
+			if(follow.dir.equals("shoot"))
+			{
+				wait(.75);
+			}
+		}
+		if(runNum == -5)
+		{
+			wait(.5);
+			shoot.indexAuto(true);
+		}
+		if(runNum == -6)
+			shoot.indexAuto(false);
 	}
 	
 	private void goDistance(double dist, double speed)
@@ -322,7 +343,10 @@ public class Autonomous{
 				left.drive(0);
 				
 				hasRun = false;
-				runNum++;
+				if(runNum>=0)
+					runNum++;
+				else
+					runNum--;
 			}
 		}
 		
@@ -344,62 +368,10 @@ public class Autonomous{
 				left.drive(0);
 				
 				hasRun = false;
-				runNum++;
-				timeNeeded = 0;
-				
-				timer.stop();
-				timer.reset();
-			}
-		}
-	}
-	private void goDistanceSec(double dist, double speed)
-	{
-		if(!hasRun)
-		{
-			right.drive(-speed);
-			left.drive(speed);
-		}
-		
-		if(isEnc)
-		{
-			if(!hasRun)
-			{
-				lEnc.reset();
-				rEnc.reset();
-				hasRun = true;
-			}
-			
-			large = Math.abs(Math.max(lEnc.getRaw(), rEnc.getRaw()));
-			
-			if(large*circumference>dist)
-			{
-				right.drive(0);
-				left.drive(0);
-				
-				hasRun = false;
-				runNum++;
-			}
-		}
-		
-		//For when the encoders break
-		else if(!isEnc)
-		{
-			double timeWarm = .5;
-			int dist2 = 0;
-			double timeNeeded = timeWarm + ((dist / circumference) / ((speed * 5310) / (60 * 12.75)));
-			if(!hasRun)
-			{
-				timer.start();
-				hasRun = true;
-			}
-			
-			if(timer.get()>timeNeeded)
-			{
-				right.drive(0);
-				left.drive(0);
-				
-				hasRun = false;
-				runNum--;
+				if(runNum>=0)
+					runNum++;
+				else
+					runNum--;
 				timeNeeded = 0;
 				
 				timer.stop();
@@ -409,7 +381,7 @@ public class Autonomous{
 	}
 	
 	//Untested
-	private void wait(int time)
+	private void wait(double time)
 	{
 		if(!hasRun)
 		{
@@ -421,7 +393,10 @@ public class Autonomous{
 			timer.stop();
 			timer.reset();
 			hasRun = false;
-			runNum++;
+			if(runNum>=0)
+				runNum++;
+			else
+				runNum--;
 		}
 	}
 	
@@ -456,12 +431,10 @@ public class Autonomous{
 			left.drive(0);
 			
 			hasRun = false;
-			runNum--;
+			if(runNum>=0)
+				runNum++;
+			else
+				runNum--;
 		}
-	}
-	
-	public void track()
-	{
-		
 	}
 }
