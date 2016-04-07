@@ -333,6 +333,8 @@ public class Robot extends IterativeRobot {
     
     public void cameraUI()
     {
+    	try
+    	{
     	//Starts USB camera
     	NIVision.IMAQdxStartAcquisition(session);
     	//Instantiate rectangles (fix the location of the rectangles
@@ -346,7 +348,11 @@ public class Robot extends IterativeRobot {
     				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
     	//display the new image
     	CameraServer.getInstance().setImage(frame);
-
+    	}
+    	catch(Exception ace)
+    	{
+    		System.out.println(ace.getMessage());
+    	}
     }
     public void testPeriodic() 
     {
