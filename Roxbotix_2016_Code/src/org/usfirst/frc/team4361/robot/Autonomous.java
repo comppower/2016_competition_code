@@ -1,7 +1,12 @@
 package org.usfirst.frc.team4361.robot;
 
 import edu.wpi.first.wpilibj.Timer;
+
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.*;
+
 
 public class Autonomous{
 	
@@ -25,6 +30,8 @@ public class Autonomous{
 	
 	Portcullis port;
 	
+	AHRS navx;
+	
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port)
 	{
 		diameter = 8.4;
@@ -46,6 +53,8 @@ public class Autonomous{
 		this.port = port;
 		
 		follow = new TargetFollow(left, right, shoot);
+		
+		navx = new AHRS(SerialPort.Port.kMXP); 
 	}
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port, Encoder lEnc, Encoder rEnc)
 	{
@@ -437,4 +446,9 @@ public class Autonomous{
 				runNum--;
 		}
 	}
+	
+	/*private void turn(int angle)
+	{
+		
+	}*/
 }
