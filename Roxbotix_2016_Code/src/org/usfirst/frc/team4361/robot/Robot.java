@@ -139,6 +139,7 @@ public class Robot extends IterativeRobot {
         
         sec = new SendableChooser();
         sec.addDefault("None", "none");
+        sec.addDefault("High Goal", "high");
         
         SmartDashboard.putData("Auto choices", chooser);
         SmartDashboard.putData("Secondary", sec);
@@ -212,11 +213,10 @@ public class Robot extends IterativeRobot {
     	
     	//Merge
     	switch(secSelected){
-    	case "High":
+    	case "high":
     	auto.high((int) SmartDashboard.getNumber("posGet"), autoSelected);
     		break;
     	
-    	case "None":
     	default:
     		break;
     	}
@@ -335,23 +335,23 @@ public class Robot extends IterativeRobot {
     {
     	try
     	{
-    	//Starts USB camera
-    	NIVision.IMAQdxStartAcquisition(session);
-    	//Instantiate rectangles (fix the location of the rectangles
-    	NIVision.Rect rightRect = new NIVision.Rect(99,440,176,13);
-    	NIVision.Rect midRect = new NIVision.Rect(135,132,25,25);
-    	//Draw rectangles on screen
-    	NIVision.IMAQdxGrab(session, frame, 1);
-    	NIVision.imaqDrawShapeOnImage(frame, frame, rightRect,
-    			DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
-    	NIVision.imaqDrawShapeOnImage(frame, frame, midRect,
-    				DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
-    	//display the new image
-    	CameraServer.getInstance().setImage(frame);
-    	}
+			// Starts USB camera
+			NIVision.IMAQdxStartAcquisition(session);
+			System.out.println("good");
+			// Instantiate rectangles (fix the location of the rectangles
+			NIVision.Rect rightRect = new NIVision.Rect(99, 440, 176, 13);
+			NIVision.Rect midRect = new NIVision.Rect(135, 132, 25, 25);
+			// Draw rectangles on screen
+			NIVision.IMAQdxGrab(session, frame, 1);
+			NIVision.imaqDrawShapeOnImage(frame, frame, rightRect, DrawMode.PAINT_VALUE, ShapeMode.SHAPE_RECT, 200f);
+			NIVision.imaqDrawShapeOnImage(frame, frame, midRect, DrawMode.DRAW_VALUE, ShapeMode.SHAPE_RECT, 200f);
+			// display the new image
+			CameraServer.getInstance().setImage(frame);
+		}
     	catch(Exception ace)
     	{
     		System.out.println(ace.getMessage());
+    		System.out.println("bad");
     	}
     }
     public void testPeriodic() 
