@@ -136,18 +136,19 @@ public class Autonomous implements PIDOutput{
 			goDistance(56, .3);
 		if(runNum == 1)
 		{
-			wait(0.0);
+			wait(1.0);
 			port.lift(0);
 			//shoot.lift(.5);
 		}
 		if(runNum == 2)
 		{
-			goDistance(100, .6);
+			//goDistance(100, .6);
+			wait(0.0);
 			port.lift(-1);
 			//shoot.lift(0);
 		}
 		if(runNum == 3)
-			goDistance(5, -.4);
+			goDistance(0, -.4);
 		if(runNum == 4)
 			runNum = -1;
 	}
@@ -252,18 +253,18 @@ public class Autonomous implements PIDOutput{
 			}
 			else if(def.equals("roughTerrain"))
 			{
-				minDist = 0;
-				maxDist = 0;
+				minDist = 4;
+				maxDist = 4;
 			}
 			else if(def.equals("rockWall"))
 			{
-				minDist = 0;
-				maxDist = 0;
+				minDist = 36;
+				maxDist = 48;
 			}
 			else if(def.equals("moat"))
 			{
-				minDist = 0;
-				maxDist = 0;
+				minDist = 36;
+				maxDist = 48;
 			}
 			else if(def.equals("portcullis"))
 			{
