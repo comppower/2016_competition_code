@@ -1,14 +1,11 @@
 package org.usfirst.frc.team4361.robot;
 
-import edu.wpi.first.wpilibj.Timer;
-
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.*;
 
 
-public class Autonomous{
+public class Autonomous implements PIDOutput{
 	
 	double diameter;
 	double circumference;
@@ -32,6 +29,16 @@ public class Autonomous{
 	
 	AHRS navx;
 	
+	static final double kP = 0.03;
+	static final double kI = 0.00;
+	static final double kD = 0.00;
+	static final double kF = 0.00;
+	    
+	static final double kToleranceDegrees = 2.0f;
+	    
+	double rotateToAngleRate;
+	PIDController turnController;
+	
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port)
 	{
 		diameter = 8.4;
@@ -54,7 +61,13 @@ public class Autonomous{
 		
 		follow = new TargetFollow(left, right, shoot);
 		
-		navx = new AHRS(SerialPort.Port.kMXP); 
+		navx = new AHRS(SerialPort.Port.kMXP);	
+	    turnController = new PIDController(kP, kI, kD, kF, navx, this);
+	    turnController.setInputRange(-180.0f,  180.0f);
+	    turnController.setOutputRange(-1.0, 1.0);
+	    turnController.setAbsoluteTolerance(kToleranceDegrees);
+	    turnController.setContinuous(true);
+
 	}
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port, Encoder lEnc, Encoder rEnc)
 	{
@@ -409,7 +422,7 @@ public class Autonomous{
 		}
 	}
 	
-	private void turn(double angle)
+	private void turn(double angle, boolean a)
 	{
 		double percent = Math.abs(angle)/360;
 		if(!hasRun)
@@ -447,8 +460,28 @@ public class Autonomous{
 		}
 	}
 	
-	/*private void turn(int angle)
+	private void turn(double angle)
 	{
-		
-	}*/
+    	turnController.setSetpoint(angle);
+    	turnController.enable();
+    	if(rotateToAngleRate!=0)
+    	{
+    		left.drive(rotateToAngleRate);
+    		right.drive(-rotateToAngleRate);
+    	}
+    	else
+    	{
+    		turnController.disable();
+    		if(runNum>=0)
+				runNum++;
+			else
+				runNum--;
+    	}
+    	
+	}
+	@Override
+	public void pidWrite(double output) 
+	{
+		rotateToAngleRate = output;
+	}
 }
