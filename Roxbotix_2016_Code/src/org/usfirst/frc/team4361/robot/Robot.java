@@ -234,6 +234,7 @@ public class Robot extends IterativeRobot {
 		stick1X = stick[1].getAxis(Joystick.AxisType.kX);
 		stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
 		
+		
 		//sets vision tracking vals
 
     	
@@ -337,7 +338,6 @@ public class Robot extends IterativeRobot {
     	{
 			// Starts USB camera
 			NIVision.IMAQdxStartAcquisition(session);
-			System.out.println("good");
 			// Instantiate rectangles (fix the location of the rectangles
 			NIVision.Rect rightRect = new NIVision.Rect(99, 440, 176, 13);
 			NIVision.Rect midRect = new NIVision.Rect(135, 132, 25, 25);
@@ -351,7 +351,6 @@ public class Robot extends IterativeRobot {
     	catch(Exception ace)
     	{
     		System.out.println(ace.getMessage());
-    		System.out.println("bad");
     	}
     }
     public void testPeriodic() 
