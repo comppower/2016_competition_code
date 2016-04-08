@@ -115,7 +115,7 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	
-    	track = new TargetFollow(left, right, shooter);
+    	track = new TargetFollow(left, right, shooter,133,105);
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);

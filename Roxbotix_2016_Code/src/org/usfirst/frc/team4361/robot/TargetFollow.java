@@ -22,10 +22,10 @@ public class TargetFollow {
     Drive left, right;
     Shooter shoot;
     
-	public TargetFollow(Drive left, Drive right, Shooter shoot) {
+	public TargetFollow(Drive left, Drive right, Shooter shoot, double xCal, double yCal) {
 		//set up corrected centers for the robot
         table = NetworkTable.getTable("GRIP/myContoursReport");
-        track = new Tracking(133,105);
+        track = new Tracking(xCal, yCal); //133, 105
         ave = new WeightedAverage(10,700);
         
         this.left = left;
