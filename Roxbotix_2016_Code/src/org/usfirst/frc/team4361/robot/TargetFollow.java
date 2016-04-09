@@ -74,14 +74,14 @@ public class TargetFollow {
 				 System.out.println(dir);
 			}
 			
-			if(dir.equals("left"))
+			if(dir.equals("right"))
 			{
 				//1.5 to correct for slower turn
 				left.drive(-speed);
 				right.drive(-speed);
 	
 			}
-			if(dir.equals("right"))
+			if(dir.equals("left"))
 			{
 				left.drive(speed);
 				right.drive(speed);
@@ -111,13 +111,18 @@ public class TargetFollow {
     	ave.cal=true;
 		for(int i=0; i<ave.centerX.length; i++)
 		{
+			ave.xIn(centerX[0]);
+			ave.yIn(centerY[0]);
+		}
+    	for(int i=0; i<ave.centerX.length; i++)
+		{
 			if(ave.centerX[i]==-1)
 			{
 				ave.cal=false;
 			}
 		}
 		//intializes values to look for the best hit
-    	int index =-1;
+    	/*int index =-1;
 		double score =0;
 		//calibrate this corScore value
 		double corScore=1;
@@ -136,14 +141,8 @@ public class TargetFollow {
 		if(index ==-1)
 		{
 
-		}
-		else
-		{
-			//System.out.println(" 	"+corScore + " was closest at "+index);
-			//put in centerX[index] here instead of corScore
-			ave.xIn(centerX[index]);
-			ave.yIn(centerY[index]);
-		}
+		}*/
+
     }
     public double[] input(double[] length, double width[], double[] x, double[] y, double[] a)
     {

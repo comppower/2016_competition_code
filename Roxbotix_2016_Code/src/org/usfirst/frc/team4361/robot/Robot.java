@@ -348,6 +348,8 @@ public class Robot extends IterativeRobot {
 	   		printUI(-1,-1);
 	   	}
     	//SmartDashboard.putNumber("y", 6);
+	   	SmartDashboard.putString("direction", track.dir);
+	   	
     }
     
     /**
