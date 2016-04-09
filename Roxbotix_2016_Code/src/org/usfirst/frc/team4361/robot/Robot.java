@@ -120,8 +120,8 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	
-    	xCal=78.5;
-    	yCal=95;
+    	xCal=116;
+    	yCal=91;
     	track = new TargetFollow(left, right, shooter,xCal,yCal);
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
@@ -316,8 +316,6 @@ public class Robot extends IterativeRobot {
 				left.drive(0);
 		}
     	//end untested code
-		SmartDashboard.putString("heading", track.dir);
-		SmartDashboard.putDouble("speed", CAN[4].get());
 	    //Drives shooter
 	    //shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
 		if(stick[2].getIsXbox()&&!stick[1].getRawButton(1))
