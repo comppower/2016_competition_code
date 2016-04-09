@@ -52,7 +52,7 @@ public class TargetFollow {
 	   	 length = table.getNumberArray("height", deafultVal);
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
-	   	 speed=.15;
+	   	 speed=.25;
 		if(centerX.length>0)
 		{
 			if(!ave.cal)
@@ -80,15 +80,15 @@ public class TargetFollow {
 				left.drive(speed);
 				right.drive(speed);
 			}
-			if(dir.equals("forward"))
-			{
-				left.drive(-speed*1.25);
-				right.drive(speed);
-			}
 			if(dir.equals("back"))
 			{
-				left.drive(speed*1.25);
-				right.drive(-speed*1.25);
+				left.drive(-speed);
+				right.drive(speed);
+			}
+			if(dir.equals("forward"))
+			{
+				left.drive(speed);
+				right.drive(-speed);
 			}
 			if(dir.equals("shoot"))
 			{

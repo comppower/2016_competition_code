@@ -59,7 +59,7 @@ public class Autonomous implements PIDOutput{
 		this.shoot = shoot;
 		this.port = port;
 		
-		follow = new TargetFollow(left, right, shoot);
+		follow = new TargetFollow(left, right, shoot, 19, 74);
 		
 		navx = new AHRS(SerialPort.Port.kMXP);	
 	    turnController = new PIDController(kP, kI, kD, kF, navx, this);
