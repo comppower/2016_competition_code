@@ -205,7 +205,7 @@ public class Autonomous implements PIDOutput{
 			goDistance(54, 1);
 		if(runNum == 1)
 		{
-			goDistance(200, 1);
+			goDistance(300, 1);
 			port.lift(180);
 			//shoot.lift(.7);
 		}
