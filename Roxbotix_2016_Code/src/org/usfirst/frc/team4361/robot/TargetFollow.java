@@ -179,24 +179,5 @@ public class TargetFollow {
     	return def;
     }
     
-    public void printUI(double yCur, double xCur)
-    {
-    	//supply correct x and y vals for calibration
-    	SmartDashboard.putNumber("ROTATION", (xCal-xCur)/xCal);
-    	SmartDashboard.putNumber("ELEVATION", (yCal-yCur)/yCal);
-    	SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
-    	SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
-    }
-    public void printUI()
-    {
-    	 //Prints out UI (untested code)
-        if(centerX.length>0&&centerY.length>0)
-        {
-        	printUI(centerX[0], centerY[0]);
-        }
-        else
-        {
-        	printUI(-1,-1);
-        }
-    }
+ 
 }

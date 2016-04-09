@@ -60,6 +60,9 @@ public class Robot extends IterativeRobot {
     int session;
     Image frame;
     
+    //Calibration for VT
+    double xCal;
+    double yCal;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -76,6 +79,8 @@ public class Robot extends IterativeRobot {
     	{
     		light[i] = new Relay(i);
     	}
+    	light[0].set(Relay.Value.kForward);
+
     	
     	limitSwitch = new DigitalInput[2];
     	for(int i = 1; i < limitSwitch.length; i++)
@@ -115,7 +120,9 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	
-    	track = new TargetFollow(left, right, shooter,78.5,95);
+    	xCal=78.5;
+    	yCal=95;
+    	track = new TargetFollow(left, right, shooter,xCal,yCal);
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
@@ -273,8 +280,13 @@ public class Robot extends IterativeRobot {
     	else if(stick[1].getRawButton(1))
     	{
     		track.track();
+    	
     	}
 		
+    	else if(stick[1].getRawButton(3))
+    	{
+    		light[1].set(Relay.Value.kForward);
+    	}
 		
 		//Perfect forward drive
 		else if (stick[0].getRawButton(6)) 
@@ -310,9 +322,9 @@ public class Robot extends IterativeRobot {
 	    //shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
 		if(stick[2].getIsXbox()&&!stick[1].getRawButton(1))
 		{
-			shooter.liftSim(stick[2].getRawAxis(5));
+			shooter.liftSim(stick[2].getRawAxis(5)*.9);
 			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(6));
-			port.lift(stick[2].getRawAxis(1));
+			port.lift(-stick[2].getRawAxis(1)*.9);
 		}
 		else if(!stick[2].getIsXbox()&&!stick[1].getRawButton(1))
 		{
@@ -325,14 +337,32 @@ public class Robot extends IterativeRobot {
     	//Drives indexer
     	shooter.indexAuto(stick[0].getRawButton(1));
     	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));	
-        track.printUI();
+    	NetworkTable table =  NetworkTable.getTable("GRIP/myContoursReport");
+    	double[] deafultVal = {0};
+    	double[] centerX = table.getNumberArray("centerX", deafultVal);
+	   	double[] centerY = table.getNumberArray("centerY", deafultVal);
+	   	if(centerX.length>0&&centerY.length>0)
+        {
+	   		printUI(centerX[0], centerY[0]);
+        }
+	   	else
+	   	{
+	   		printUI(-1,-1);
+	   	}
     	//SmartDashboard.putNumber("y", 6);
     }
     
     /**
      * This function is called periodically during test mode
      */
-    
+    public void printUI(double yCur, double xCur)
+    {
+		//supply correct x and y vals for calibration
+		SmartDashboard.putNumber("ROTATION", (xCal-xCur)/xCal);
+		SmartDashboard.putNumber("ELEVATION", (yCal-yCur)/yCal);
+		SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
+		SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
+    }
     public void cameraUI()
     {
     	try
