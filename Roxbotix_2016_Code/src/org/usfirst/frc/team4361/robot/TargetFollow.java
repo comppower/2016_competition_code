@@ -18,6 +18,9 @@ public class TargetFollow {
 	double[] area;
 	String dir = "";
 	double speed=.15;
+	
+	double xCal;
+	double yCal;
     
     Drive left, right;
     Shooter shoot;
@@ -41,6 +44,9 @@ public class TargetFollow {
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
 	   	 speed=.15;
+	   	 
+	   	 this.xCal = xCal;
+	   	 this.yCal = yCal;
 	}
 	
 	public void track()
@@ -93,6 +99,8 @@ public class TargetFollow {
 			if(dir.equals("shoot"))
 			{
 				shoot.shoot(false, true);
+				left.drive(0);
+				right.drive(0);
 			}
 		}
 	}
@@ -174,10 +182,8 @@ public class TargetFollow {
     public void printUI(double yCur, double xCur)
     {
     	//supply correct x and y vals for calibration
-    	double xCal = 156;
-    	double yCal = 31;
-    	SmartDashboard.putDouble("ROTATION", (xCal-xCur)/xCal);
-    	SmartDashboard.putDouble("ELEVATION", (yCal-yCur)/yCal);
+    	SmartDashboard.putNumber("ROTATION", (xCal-xCur)/xCal);
+    	SmartDashboard.putNumber("ELEVATION", (yCal-yCur)/yCal);
     	SmartDashboard.putBoolean("Alignment: X", Math.abs(xCal-xCur)/xCal<.05);
     	SmartDashboard.putBoolean("Alignment: Y", Math.abs(yCal-yCur)/yCal<.05);
     }

@@ -308,13 +308,13 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putDouble("speed", CAN[4].get());
 	    //Drives shooter
 	    //shooter.lift(stick[2].getAxis(Joystick.AxisType.kY));
-		if(stick[2].getIsXbox())
+		if(stick[2].getIsXbox()&&!stick[1].getRawButton(1))
 		{
 			shooter.liftSim(stick[2].getRawAxis(5));
 			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(6));
 			port.lift(stick[2].getRawAxis(1));
 		}
-		else
+		else if(!stick[2].getIsXbox()&&!stick[1].getRawButton(1))
 		{
 			shooter.liftSim(stick[2].getAxis(Joystick.AxisType.kY));
 			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
@@ -324,10 +324,9 @@ public class Robot extends IterativeRobot {
     	
     	//Drives indexer
     	shooter.indexAuto(stick[0].getRawButton(1));
-    	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));
-    	
+    	//shooter.index(stick[0].getRawButton(1), stick[1].getRawButton(1));	
         track.printUI();
-
+    	//SmartDashboard.putNumber("y", 6);
     }
     
     /**

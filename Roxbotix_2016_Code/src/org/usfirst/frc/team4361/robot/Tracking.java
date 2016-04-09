@@ -9,7 +9,7 @@ public class Tracking {
 		//to make this work, just parse the exact values that are prin
 		corX=inY;
 		corY=inX;
-		filter =.1;
+		filter =.05;
 	}
 	//set the current X,Y and area values (reverse them when they are inputed like so
 	public String track(double y, double x)
