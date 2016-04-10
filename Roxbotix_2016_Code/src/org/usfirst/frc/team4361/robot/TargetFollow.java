@@ -58,7 +58,7 @@ public class TargetFollow {
 	   	 length = table.getNumberArray("height", deafultVal);
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
-	   	 speed=.25;
+	   	 speed=.4;
 		if(centerX.length>0)
 		{
 			if(!ave.cal)

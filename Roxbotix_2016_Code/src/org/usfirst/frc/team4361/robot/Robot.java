@@ -79,7 +79,7 @@ public class Robot extends IterativeRobot {
     	{
     		light[i] = new Relay(i);
     	}
-    	light[0].set(Relay.Value.kForward);
+    	
 
     	
     	limitSwitch = new DigitalInput[2];
@@ -100,7 +100,7 @@ public class Robot extends IterativeRobot {
         	CAN[i] = new CANTalon(i);
         }
         
-        CANTalon[] leftDrive = {CAN[0], CAN[1]};
+        CANTalon[] leftDrive = {CAN[9], CAN[1]};
     	left = new Drive(leftDrive);
     	
     	CANTalon[] rightDrive = {CAN[2], CAN[3]};
@@ -120,8 +120,8 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	
-    	xCal=116;
-    	yCal=91;
+    	xCal=94;
+    	yCal=97;
     	track = new TargetFollow(left, right, shooter,xCal,yCal);
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
@@ -241,8 +241,14 @@ public class Robot extends IterativeRobot {
 		stick1X = stick[1].getAxis(Joystick.AxisType.kX);
 		stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
 		
+		//light[0].set(Relay.Value.kForward);
+		//light[1].set(Relay.Value.kForward);
 		
 		//sets vision tracking vals
+		for(int i =0; i<CAN.length; i++)
+		{
+			SmartDashboard.putNumber("talon " +i, CAN[i].getOutputCurrent());
+		}
 
     	
         //adjusts gear box
@@ -277,15 +283,15 @@ public class Robot extends IterativeRobot {
 		}
 		
     	
-    	else if(stick[1].getRawButton(1))
+    	/*else if(stick[1].getRawButton(1))
     	{
     		track.track();
     	
-    	}
+    	}*/
 		
     	else if(stick[1].getRawButton(3))
     	{
-    		light[1].set(Relay.Value.kForward);
+    		//light[1].set(Relay.Value.kForward);
     	}
 		
 		//Perfect forward drive
@@ -348,7 +354,7 @@ public class Robot extends IterativeRobot {
 	   		printUI(-1,-1);
 	   	}
     	//SmartDashboard.putNumber("y", 6);
-	   	SmartDashboard.putString("direction", track.dir);
+	   	SmartDashboard.putNumber("motor", CAN[0].get());
 	   	
     }
     
