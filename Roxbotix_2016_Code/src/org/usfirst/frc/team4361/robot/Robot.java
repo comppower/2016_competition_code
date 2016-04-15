@@ -245,10 +245,7 @@ public class Robot extends IterativeRobot {
 		//light[1].set(Relay.Value.kForward);
 		
 		//sets vision tracking vals
-		for(int i =0; i<CAN.length; i++)
-		{
-			SmartDashboard.putNumber("talon " +i, CAN[i].getOutputCurrent());
-		}
+
 
     	
         //adjusts gear box
@@ -283,11 +280,11 @@ public class Robot extends IterativeRobot {
 		}
 		
     	
-    	/*else if(stick[1].getRawButton(1))
+    	else if(stick[1].getRawButton(1))
     	{
     		track.track();
     	
-    	}*/
+    	}
 		
     	else if(stick[1].getRawButton(3))
     	{
@@ -353,9 +350,12 @@ public class Robot extends IterativeRobot {
 	   	{
 	   		printUI(-1,-1);
 	   	}
-    	//SmartDashboard.putNumber("y", 6);
+
 	   	SmartDashboard.putNumber("motor", CAN[0].get());
-	   	
+	   	SmartDashboard.putString("dir",track.dir);
+	   	SmartDashboard.putNumber("Average x", track.ave.getAverage("x"));
+	   	SmartDashboard.putNumber("Average y", track.ave.getAverage("y"));
+	
     }
     
     /**

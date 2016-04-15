@@ -58,7 +58,7 @@ public class TargetFollow {
 	   	 length = table.getNumberArray("height", deafultVal);
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
-	   	 speed=.4;
+	   	 speed=.3;
 		if(centerX.length>0)
 		{
 			if(!ave.cal)
@@ -74,24 +74,24 @@ public class TargetFollow {
 				 System.out.println(dir);
 			}
 			
-			if(dir.equals("right"))
+			if(dir.equals("forward"))
 			{
 				//1.5 to correct for slower turn
 				left.drive(-speed);
 				right.drive(-speed);
 	
 			}
-			if(dir.equals("left"))
+			if(dir.equals("back"))
 			{
 				left.drive(speed);
 				right.drive(speed);
 			}
-			if(dir.equals("back"))
+			if(dir.equals("left"))
 			{
 				left.drive(-speed);
 				right.drive(speed);
 			}
-			if(dir.equals("forward"))
+			if(dir.equals("right"))
 			{
 				left.drive(speed);
 				right.drive(-speed);
