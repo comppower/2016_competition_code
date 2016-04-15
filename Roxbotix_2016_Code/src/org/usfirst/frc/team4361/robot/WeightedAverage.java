@@ -10,9 +10,10 @@ public class WeightedAverage {
 	
 	public WeightedAverage(double minA,double maxA)
 	{
-		centerX = new double[8];
-		centerY = new double[8];
-		area = new double[8];
+		final int length =4;
+		centerX = new double[length];
+		centerY = new double[length];
+		area = new double[length];
 		//minA and maxA are used to get three ranges for three motor settings
 		this.minA=minA;
 		this.maxA=maxA;
@@ -60,6 +61,7 @@ public class WeightedAverage {
 	//h
 	public double getAverage(String val)
 	{
+		int divisor = area.length + area.length/2;
 		double average =0;
 		if(val.toUpperCase().equals("AREA"))
 		{
@@ -75,7 +77,7 @@ public class WeightedAverage {
 					average += area[i]*2;
 				}
 			}
-			average/=12;
+			average/=divisor;
 			//determines required motor speed based of distance bracket
 			//this uses the areaInc to create the intervals for the bracket
 			if(average>minA+areaInc*2)
@@ -104,7 +106,7 @@ public class WeightedAverage {
 					average += centerX[i]*2;
 				}
 			}
-			return average/12;
+			return average/divisor;
 		}
 		if(val.toUpperCase().equals("Y"))
 		{
@@ -119,7 +121,7 @@ public class WeightedAverage {
 					average += centerY[i]*2;
 				}
 			}
-			return average/12;
+			return average/divisor;
 		}
 		return -1;
 
