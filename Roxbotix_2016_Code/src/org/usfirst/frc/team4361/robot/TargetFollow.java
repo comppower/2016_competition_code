@@ -74,24 +74,24 @@ public class TargetFollow {
 				 System.out.println(dir);
 			}
 			
-			if(dir.equals("forward"))
+			if(dir.equals("left"))
 			{
 				//1.5 to correct for slower turn
 				left.drive(-speed);
 				right.drive(-speed);
 	
 			}
-			if(dir.equals("back"))
+			if(dir.equals("right"))
 			{
 				left.drive(speed);
 				right.drive(speed);
 			}
-			if(dir.equals("left"))
+			if(dir.equals("back"))
 			{
 				left.drive(-speed);
 				right.drive(speed);
 			}
-			if(dir.equals("right"))
+			if(dir.equals("forward"))
 			{
 				left.drive(speed);
 				right.drive(-speed);
