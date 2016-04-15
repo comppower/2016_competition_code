@@ -63,6 +63,7 @@ public class Robot extends IterativeRobot {
     //Calibration for VT
     double xCal;
     double yCal;
+    boolean shot;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -119,10 +120,11 @@ public class Robot extends IterativeRobot {
     	
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
-    	
-    	xCal=94;
-    	yCal=97;
+    	//VT stuff
+    	xCal=102;
+    	yCal=109;
     	track = new TargetFollow(left, right, shooter,xCal,yCal);
+    	shot =false;
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
@@ -283,9 +285,8 @@ public class Robot extends IterativeRobot {
     	else if(stick[1].getRawButton(1))
     	{
     		track.track();
-    	
     	}
-		
+
     	else if(stick[1].getRawButton(3))
     	{
     		//light[1].set(Relay.Value.kForward);

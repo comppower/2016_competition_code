@@ -3,6 +3,7 @@ package org.usfirst.frc.team4361.robot;
 public class Tracking {
 	public double corX, corY, corA;
 	public double filter;
+	public double getRatio;
 	//intialize the class with all of the calibration values
 	public Tracking(double inX, double inY)
 	{
@@ -22,6 +23,14 @@ public class Tracking {
 		//The left and right statements must be reversed, becasue the x adjustments change the y axis
 		//the back and forward statements are as they should be, becuase the x cooridnate is 0 when the robot
 		//is as far forward as possible to the target
+		if(Math.abs(corX-x)/corX>Math.abs(corY-y)/corY)
+		{
+			getRatio= Math.abs(corX-x)/corX;
+		}
+		else
+		{
+			getRatio=Math.abs(corY-y)/corY;
+		}
 		if(Math.abs(corX-x)/corX>filter)
 		{
 			if(x>corX)
