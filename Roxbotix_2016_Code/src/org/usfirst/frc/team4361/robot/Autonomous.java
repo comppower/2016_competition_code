@@ -326,7 +326,7 @@ public class Autonomous implements PIDOutput{
 		if(runNum == -4)
 		{
 			shoot.liftSim(0);
-			follow.track();
+			follow.track(.5);
 			if(follow.dir.equals("shoot"))
 			{
 				wait(.75);

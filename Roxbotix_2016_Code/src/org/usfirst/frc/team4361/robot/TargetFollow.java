@@ -16,8 +16,13 @@ public class TargetFollow {
 	double[] width; 
 	double[] length;
 	double[] area;
+	
 	String dir = "";
+	int cur=0;
+	int prev=0;
+
 	double speed=.15;
+	boolean half=false;
 	
 	double xCal;
 	double yCal;
@@ -43,13 +48,15 @@ public class TargetFollow {
 	   	 length = table.getNumberArray("height", deafultVal);
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
+
 	   	 speed=.15;
+	   	 half=false;
 	   	 
 	   	 this.xCal = xCal;
 	   	 this.yCal = yCal;
 	}
 	
-	public void track()
+	public void track(double calIn)
 	{
 		deafultVal = new double[0];
 	   	 centerX = table.getNumberArray("centerX", deafultVal);
@@ -58,7 +65,16 @@ public class TargetFollow {
 	   	 length = table.getNumberArray("height", deafultVal);
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
-	   	 speed=.2;
+
+	   	 if(half)
+	   	 {
+		   	 speed=1.5*.1*-calIn+.15*.5;
+	   	 }
+	   	 else if(!half)
+	   	 {
+		   	 speed=1.5*.1*-calIn+.15;
+	   	 }
+
 		if(centerX.length>0)
 		{
 			if(!ave.cal)
@@ -68,45 +84,48 @@ public class TargetFollow {
 			}
 			else
 			{
-				double[] values = input(length, width, centerX, centerY, area);
-				 dir = track.track(values[0], values[1]);
+				//double[] values = input(length, width, centerX, centerY, area);
+				 dir = track.track(centerX[0], centerY[0]);
 				 //filter = values[2];
-				 System.out.println(dir);
+
+				 System.out.println("speed: "+speed+"half: " + half);
 			}
-			if(track.getRatio>.15)
+			if(checkForward())
 			{
-				speed=.2;
+				dir="forward";
+				System.out.println("checkem");
 			}
-			else if(track.getRatio<.15)
-			{
-				speed=.15;
-			}
-			
+			 System.out.println(dir);
+
 			if(dir.equals("left"))
 			{
 				//1.5 to correct for slower turn
 				left.drive(-speed*1.25);
 				right.drive(-speed*1.25);
 				shoot.shoot(false, false);
-	
+				cur=1;
 			}
 			if(dir.equals("right"))
 			{
 				left.drive(speed*1.25);
 				right.drive(speed*1.25);
 				shoot.shoot(false, false);
+				cur=2;
 			}
 			if(dir.equals("back"))
 			{
 				left.drive(-speed);
 				right.drive(speed);
 				shoot.shoot(false, false);
+				cur=3;
 			}
 			if(dir.equals("forward"))
 			{
 				left.drive(speed);
 				right.drive(-speed);
 				shoot.shoot(false, false);
+				cur=4;
+
 			}
 			if(dir.equals("shoot"))
 			{
@@ -114,9 +133,49 @@ public class TargetFollow {
 				left.drive(0);
 				right.drive(0);
 			}
+			half=checkRep();
+			prev=cur;
+
+			
+
 		}
 	}
-	
+	public boolean checkForward()
+	{
+		if(cur==1&&prev==2||cur==2&&prev==1)
+		{
+			return true;
+		}
+		return false;
+	}
+	public boolean checkRep()
+	{
+		if(cur==1&&prev==2)
+		{
+			return true;
+		}
+		if(cur==2&&prev==1)
+		{
+			return true;
+		}
+		if(cur==1&&prev==2)
+		{
+			return true;
+		}
+		if(cur==3&&prev==4)
+		{
+			return true;
+		}
+		if(cur==4&&prev==3)
+		{
+			return true;
+		}
+		if(prev==3&&cur==3)
+		{
+			return true;
+		}
+		return false;
+	}
 	public void cal(double[] length, double[] width, double[] centerX, double[] centerY)
     {
     	//check to see if the array is full already

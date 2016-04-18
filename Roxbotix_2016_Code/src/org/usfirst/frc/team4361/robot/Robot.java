@@ -121,8 +121,8 @@ public class Robot extends IterativeRobot {
     	//auto = new Autonomous(left, right, shooter);
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	//VT stuff
-    	xCal=102;
-    	yCal=109;
+    	xCal=91;
+    	yCal=92;
     	track = new TargetFollow(left, right, shooter,xCal,yCal);
     	shot =false;
     	
@@ -284,7 +284,7 @@ public class Robot extends IterativeRobot {
     	
     	else if(stick[1].getRawButton(1))
     	{
-    		track.track();
+    		track.track(stick[1].getRawAxis(3));
     	}
 
     	else if(stick[1].getRawButton(3))
