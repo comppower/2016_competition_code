@@ -73,13 +73,13 @@ public class TargetFollow {
 				 //filter = values[2];
 				 System.out.println(dir);
 			}
-			if(track.getRatio>.1)
+			if(track.getRatio>.15)
 			{
 				speed=.2;
 			}
-			else if(track.getRatio<.1)
+			else if(track.getRatio<.15)
 			{
-				speed=.1;
+				speed=.15;
 			}
 			
 			if(dir.equals("left"))
