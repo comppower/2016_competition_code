@@ -18,11 +18,15 @@ public class TargetFollow {
 	double[] area;
 	
 	String dir = "";
-	int cur=0;
-	int prev=0;
+	int curX=0;
+	int curY=0;
+	int prevX=0;
+	int prevY=0;
 
-	double speed=.15;
-	boolean half=false;
+	double speedX=.15;
+	double speedY=.15;
+	boolean halfX;
+	boolean halfY;
 	
 	double xCal;
 	double yCal;
@@ -49,8 +53,10 @@ public class TargetFollow {
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
 
-	   	 speed=.15;
-	   	 half=false;
+	   	 speedX=.15;
+	   	 speedY=.15;
+	   	 halfX=false;
+	   	 halfY=false;
 	   	 
 	   	 this.xCal = xCal;
 	   	 this.yCal = yCal;
@@ -66,15 +72,6 @@ public class TargetFollow {
 	   	 area = table.getNumberArray("area",deafultVal);
 	   	 dir = "";
 
-	   	 if(half)
-	   	 {
-		   	 speed=1.5*.1*-calIn+.15*.5;
-	   	 }
-	   	 else if(!half)
-	   	 {
-		   	 speed=1.5*.1*-calIn+.15;
-	   	 }
-
 		if(centerX.length>0)
 		{
 			if(!ave.cal)
@@ -84,71 +81,80 @@ public class TargetFollow {
 			}
 			else
 			{
-				//double[] values = input(length, width, centerX, centerY, area);
+				 //double[] values = input(length, width, centerX, centerY, area);
 				 dir = track.track(centerX[0], centerY[0]);
 				 //filter = values[2];
-
-				 System.out.println("speed: "+speed+"half: " + half);
+				 System.out.println("speedX: "+speedX+" halfX: " + halfX);
+				 System.out.println("speedY: "+speedY+" halfY: " + halfY);
 			}
-			if(checkForward())
-			{
-				dir="forward";
-				System.out.println("checkem");
-			}
-			 System.out.println(dir);
-
+			System.out.println(dir);
+			//sets motor speed
+			setSpeed(calIn);
+			//sets motors to do the corrections
 			if(dir.equals("left"))
 			{
 				//1.5 to correct for slower turn
-				left.drive(-speed*1.25);
-				right.drive(-speed*1.25);
+				left.drive(-speedX);
+				right.drive(-speedX);
 				shoot.shoot(false, false);
-				cur=1;
+				curX=1;
 			}
 			if(dir.equals("right"))
 			{
-				left.drive(speed*1.25);
-				right.drive(speed*1.25);
+				left.drive(speedX);
+				right.drive(speedX);
 				shoot.shoot(false, false);
-				cur=2;
+				curX=2;
 			}
 			if(dir.equals("back"))
 			{
-				left.drive(-speed);
-				right.drive(speed);
+				left.drive(-speedY);
+				right.drive(speedY);
 				shoot.shoot(false, false);
-				cur=3;
+				curY=2;
 			}
 			if(dir.equals("forward"))
 			{
-				left.drive(speed);
-				right.drive(-speed);
+				left.drive(speedY);
+				right.drive(-speedY);
 				shoot.shoot(false, false);
-				cur=4;
-
+				curY=1;
 			}
+			
 			if(dir.equals("shoot"))
 			{
 				shoot.shoot(false, true);
 				left.drive(0);
 				right.drive(0);
 			}
-			half=checkRep();
-			prev=cur;
-
-			
+			halfX=checkRep(curX,prevX,halfX);
+			halfY=checkRep(curY,prevY,halfY);
+			prevY=curY;
+			prevX=curX;
 
 		}
 	}
-	public boolean checkForward()
+
+	public void setSpeed(double calIn) 
 	{
-		if(cur==1&&prev==2||cur==2&&prev==1)
+		if (halfX) 
 		{
-			return true;
+			speedX = .2 * -calIn + .15 * .5;
+		} 
+		else if (!halfX) 
+		{
+			speedX = .2 * -calIn + .15;
 		}
-		return false;
+		if(halfY)
+		{
+			speedY= .15 * -calIn + .15 * .5;
+		}
+		else if(!halfY)
+		{
+			speedY= .15 * -calIn + .15;
+		}
 	}
-	public boolean checkRep()
+	public boolean checkRep(int cur, int prev, boolean half)
 	{
 		if(cur==1&&prev==2)
 		{
@@ -158,19 +164,7 @@ public class TargetFollow {
 		{
 			return true;
 		}
-		if(cur==1&&prev==2)
-		{
-			return true;
-		}
-		if(cur==3&&prev==4)
-		{
-			return true;
-		}
-		if(cur==4&&prev==3)
-		{
-			return true;
-		}
-		if(prev==3&&cur==3)
+		if(cur==prev && half==true)
 		{
 			return true;
 		}

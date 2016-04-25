@@ -284,7 +284,7 @@ public class Robot extends IterativeRobot {
     	
     	else if(stick[1].getRawButton(1))
     	{
-    		track.track(stick[1].getRawAxis(3));
+    		track.track(stick[0].getRawAxis(3));
     	}
 
     	else if(stick[1].getRawButton(3))
