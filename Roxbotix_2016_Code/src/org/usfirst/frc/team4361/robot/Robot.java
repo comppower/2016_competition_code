@@ -122,7 +122,7 @@ public class Robot extends IterativeRobot {
     	auto = new Autonomous(left, right, shooter, port, lEnc, rEnc);
     	//VT stuff
     	xCal=91;
-    	yCal=92;
+    	yCal=94;
     	track = new TargetFollow(left, right, shooter,xCal,yCal);
     	shot =false;
     	
@@ -318,6 +318,9 @@ public class Robot extends IterativeRobot {
 				left.drive(-stick1Y * drive);
 			else
 				left.drive(0);
+			//these are here to reset the 
+			track.halfY=false;
+			track.halfX=false;
 		}
     	//end untested code
 	    //Drives shooter
@@ -354,8 +357,8 @@ public class Robot extends IterativeRobot {
 
 	   	SmartDashboard.putNumber("motor", CAN[0].get());
 	   	SmartDashboard.putString("dir",track.dir);
-	   	SmartDashboard.putNumber("Average x", track.ave.getAverage("x"));
-	   	SmartDashboard.putNumber("Average y", track.ave.getAverage("y"));
+	   	SmartDashboard.putBoolean("halfX", track.halfX);
+	   	SmartDashboard.putBoolean("halfY", track.halfY);
 	
     }
     
@@ -396,79 +399,4 @@ public class Robot extends IterativeRobot {
     	
     }
     
-    
-    public void autoAlign(double yCur, double xCur, double areaCur)
-    {
-    	/*
-    	//use if statements so the index is updated with every move, and it is more effecient
-    	 check to see if the robot is out of alignment
-    	I will need to determine the expected percent error
-    	 from testing
-    	
-    	//Calibration values
-    	double xCal = 156;
-    	double yCal = 31;
-    	double areaCal=10;
-    	if(Math.abs(xCur-xCal)/xCal>.05)
-    	{
-    		//set the talons to (centerX-CORRECTED_X)/CORRECTED_X) with the proper negative/positives
-    		if(xCur-xCal>0)
-    		{
-    			right.drive(-.2);
-    			left.drive(-.2);
-    			SmartDashboard.putString("vision", "left");
-    		}
-    		else if(xCur-xCal<0)
-    		{
-    			right.drive(.2);
-    			left.drive(.2);
-    			SmartDashboard.putString("vision", "right");
-    		}
-    	}
-    	else
-    	{
-    		right.drive(0);
-    		left.drive(0);
-    	}
-    	if((yCur-yCal)>0)
-    	{
-    		//set the talons to ((centerY-CORRECTED_Y)/(Math.abs(centerY-CORRECTED_Y))), or if statements
-    		// becuase this value needs to be about 1
-    		
-    		//find where (0,0) is 
-    		right.drive(-.3);
-    		left.drive(.3);
-    		SmartDashboard.putString("vision", "forward");
-    	}
-    	else if(yCur-yCal<0again, check (0,0) spot)	
-    	{
-    		right.drive(.3);
-    		left.drive(-.3);
-    		SmartDashboard.putString("vision", "back");
-    	}
-    	else
-    	{
-    		right.drive(0);
-    		left.drive(0);
-    	}
-    	if((Math.abs(xCur-xCal)/xCal)<.05 && Math.abs((yCur-yCal)/yCal)<.05)
-    	{
-    		if(areaCur>areaCal)//only fires when lined up, otherwise it will keep the ball, to make it more effecient for the driver (long story)
-    		// possibly put or statement for timer, it depends whether keeping the ball or firing is more important
-    		{
-    			//fire the bloody thing
-    			SmartDashboard.putString("vision", "fire");
-    			right.drive(0);
-    			left.drive(0);
-    			shooter.shoot(false,true);
-    		}
-    		else
-    		{
-    			SmartDashboard.putString("vision", "go forward");
-    			right.drive(-.2);
-    			left.drive(.2);
-    		}
-    	}
-    }*/
-    }
 }

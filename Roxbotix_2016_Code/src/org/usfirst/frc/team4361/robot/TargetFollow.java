@@ -147,7 +147,7 @@ public class TargetFollow {
 		}
 		if(halfY)
 		{
-			speedY= .15 * -calIn + .15 * .5;
+			speedY= .15 * -calIn + .15 * .35;
 		}
 		else if(!halfY)
 		{
