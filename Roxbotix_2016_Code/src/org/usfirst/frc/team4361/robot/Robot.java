@@ -18,7 +18,9 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.SPI;
 
+import com.kauailabs.navx.frc.*;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -64,6 +66,9 @@ public class Robot extends IterativeRobot {
     double xCal;
     double yCal;
     boolean shot;
+    
+    //auto high goal 
+    AHRS navX;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -125,6 +130,9 @@ public class Robot extends IterativeRobot {
     	yCal=94;
     	track = new TargetFollow(left, right, shooter,xCal,yCal);
     	shot =false;
+    	
+    	//high goal auto
+    	navX=new AHRS(SPI.Port.kMXP);
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
@@ -359,6 +367,7 @@ public class Robot extends IterativeRobot {
 	   	SmartDashboard.putString("dir",track.dir);
 	   	SmartDashboard.putBoolean("halfX", track.halfX);
 	   	SmartDashboard.putBoolean("halfY", track.halfY);
+	   	SmartDashboard.putNumber("angle",navX.getAngle());
 	
     }
     
