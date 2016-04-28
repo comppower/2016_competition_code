@@ -24,6 +24,10 @@ public class TurnControl {
 		{
 			target =.1;
 		}
+		if(target<0)
+		{
+			target+=360;
+		}
 		double ratio = (angle-target)/target;
 		
 		//print statements for testing
@@ -32,17 +36,17 @@ public class TurnControl {
 		System.out.print("ratio is " + ratio + " ");
 		
 		//set ratio and ensure speed is between .15 and .65		
-		if(Math.abs(ratio)<.03)
+		if(Math.abs(ratio)<.08)
 		{
 			speed = 0;
 		}
-		else if(Math.abs(ratio)<.15)
+		else if(Math.abs(ratio)<.22)
 		{
-			speed=.15;
+			speed=.24;
 		}
-		else if(Math.abs(ratio)>.65)
+		else if(Math.abs(ratio)>.45)
 		{
-			speed =.65;
+			speed =.45;
 		}
 		else
 		{
@@ -60,11 +64,11 @@ public class TurnControl {
 	//get angle and ensure its 0<angle<=360
 	public void resetAngle()
 	{
-		if(angle>=360)
+		if(angle>=370)
 		{
 			Cal+=360;
 		}
-		if(angle<=-360)
+		if(angle<=-370)
 		{
 			Cal-=360;
 		}

@@ -69,6 +69,7 @@ public class Robot extends IterativeRobot {
     
     //auto high goal 
     AHRS navX;
+    TurnControl turn;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -133,6 +134,7 @@ public class Robot extends IterativeRobot {
     	
     	//high goal auto
     	navX=new AHRS(SPI.Port.kMXP);
+    	
     	
     	stick0X = stick[0].getAxis(Joystick.AxisType.kX);
     	stick0Y = stick[0].getAxis(Joystick.AxisType.kY);
@@ -238,7 +240,10 @@ public class Robot extends IterativeRobot {
     		break;
     	}
     }
-
+    public void teleopInit()
+    {
+    	turn = new TurnControl(navX.getAngle());
+    }
     /**
      * This function is called periodically during operator control
      */
@@ -289,7 +294,6 @@ public class Robot extends IterativeRobot {
 			}
 		}
 		
-    	
     	else if(stick[1].getRawButton(1))
     	{
     		track.track(stick[0].getRawAxis(3));
@@ -297,7 +301,9 @@ public class Robot extends IterativeRobot {
 
     	else if(stick[1].getRawButton(3))
     	{
-    		//light[1].set(Relay.Value.kForward);
+    		double speed =turn.turnAngle(navX.getAngle(), -60);
+    		left.drive(-speed);
+    		right.drive(-speed);
     	}
 		
 		//Perfect forward drive
@@ -368,6 +374,7 @@ public class Robot extends IterativeRobot {
 	   	SmartDashboard.putBoolean("halfX", track.halfX);
 	   	SmartDashboard.putBoolean("halfY", track.halfY);
 	   	SmartDashboard.putNumber("angle",navX.getAngle());
+	   	SmartDashboard.putNumber("angle actual", turn.angle);
 	
     }
     
