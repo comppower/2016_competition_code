@@ -5,7 +5,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.*;
 
 
-public class Autonomous implements PIDOutput{
+public class Autonomous {
 	
 	double diameter;
 	double circumference;
@@ -13,7 +13,7 @@ public class Autonomous implements PIDOutput{
 	
 	boolean isEnc, hasRun;
 	int runNum, lEncNum, rEncNum, large;
-	Timer timer, timerSpeed;
+	Timer timer, timerSpeed, shotTime;
 	Digit digit;
 	
 	Drive left, right;
@@ -29,15 +29,7 @@ public class Autonomous implements PIDOutput{
 	
 	AHRS navx;
 	
-	static final double kP = 0.03;
-	static final double kI = 0.00;
-	static final double kD = 0.00;
-	static final double kF = 0.00;
-	    
-	static final double kToleranceDegrees = 2.0f;
-	    
-	double rotateToAngleRate;
-	PIDController turnController;
+	TurnControl turn;
 	
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port)
 	{
@@ -51,6 +43,7 @@ public class Autonomous implements PIDOutput{
 		hasRun = false;
 		runNum = 0;
 		timer = new Timer();
+		shotTime=new Timer();
 		timerSpeed = new Timer();
 		digit = new Digit();
 		
@@ -59,14 +52,10 @@ public class Autonomous implements PIDOutput{
 		this.shoot = shoot;
 		this.port = port;
 		
-		follow = new TargetFollow(left, right, shoot, 19, 74);
+		follow = new TargetFollow(left, right, shoot, 91, 94);
 		
 		navx = new AHRS(SerialPort.Port.kMXP);	
-	    turnController = new PIDController(kP, kI, kD, kF, navx, this);
-	    turnController.setInputRange(-180.0f,  180.0f);
-	    turnController.setOutputRange(-1.0, 1.0);
-	    turnController.setAbsoluteTolerance(kToleranceDegrees);
-	    turnController.setContinuous(true);
+
 
 	}
 	public Autonomous(Drive left, Drive right, Shooter shoot, Portcullis port, Encoder lEnc, Encoder rEnc)
@@ -76,7 +65,7 @@ public class Autonomous implements PIDOutput{
 		this.rEnc = rEnc;
 		runNum = 0;
 	}
-	
+
 	public void defaultGoToObstacle()
 	{
 		if(runNum == 0)
@@ -244,6 +233,7 @@ public class Autonomous implements PIDOutput{
 	//hts
 	public void high(int pos, String def)
 	{
+		turn = new TurnControl(navx.getAngle());
 		if(runNum == -1 && !hasRun)
 		{
 			if(def.equals("lowbar"))
@@ -320,17 +310,20 @@ public class Autonomous implements PIDOutput{
 		}
 		if(runNum == -3)
 		{
-			wait(.3);
 			shoot.liftSim(-1);
+			wait(.3);	
 		}
 		if(runNum == -4)
 		{
 			shoot.liftSim(0);
 			follow.track(.5);
-			if(follow.dir.equals("shoot"))
+			shotTime.start();
+			while(follow.dir.equals("shoot"))
 			{
-				wait(.75);
+				if(timer.get()>.2)
+					runNum--;
 			}
+			timer.reset();
 		}
 		if(runNum == -5)
 		{
@@ -460,8 +453,20 @@ public class Autonomous implements PIDOutput{
 				runNum--;
 		}
 	}
-	
 	private void turn(double angle)
+	{
+		double speed =turn.turnAngle(navx.getAngle(), angle);
+   		left.drive(-speed);
+		right.drive(-speed);
+		if(speed==0)
+		{
+			if(runNum>=0)
+				runNum++;
+			else
+				runNum--;
+		}
+	}
+	/*private void turn(double angle)
 	{
     	turnController.setSetpoint(angle);
     	turnController.enable();
@@ -484,5 +489,5 @@ public class Autonomous implements PIDOutput{
 	public void pidWrite(double output) 
 	{
 		rotateToAngleRate = output;
-	}
+	}*/
 }
