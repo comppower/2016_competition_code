@@ -5,16 +5,23 @@ public class TurnControl {
 	double angle;
 	double targetAngle;
 	double speed;
+	double ratio;
+	double cur;
+	double prev;
 	
 	public TurnControl(double angle)
 	{
 		speed = 0;
 		Cal=angle;
 		this.angle=angle-Cal;
+		ratio=0;
+		cur=1;
+		prev=1;
 	}
 	public double turnAngle(double current, double target)
 	{
 		//get angle and ensure its 0<angle<=360
+		//set motor speed with calIn from the flap
 		angle =current-Cal;
 		resetAngle();
 		angle =current-Cal;
@@ -28,7 +35,7 @@ public class TurnControl {
 		{
 			target+=360;
 		}
-		double ratio = (angle-target)/target;
+		ratio = (angle-target)/target;
 		
 		//print statements for testing
 		System.out.print("Cal is " + Cal+ " ");
@@ -40,7 +47,7 @@ public class TurnControl {
 		{
 			speed = 0;
 		}
-		else if(Math.abs(ratio)<.22)
+		/*else if(Math.abs(ratio)<.22)
 		{
 			speed=.24;
 		}
@@ -51,12 +58,27 @@ public class TurnControl {
 		else
 		{
 			speed = Math.abs(ratio);
+		}*/
+		speed = .2*Math.pow(Math.E, Math.abs(ratio));
+		if(speed>1)
+			speed=1;
+		if(Math.abs(angle-target)<.01)
+		{
+			speed = 0;
 		}
-		
 		//make sure speed is set properly for negative and positive
 		if(ratio<0)
 		{
 			speed*=-1;
+			cur=1;
+		}
+		else
+		{
+			cur=-1;
+		}
+		if(cur != prev)
+		{
+			speed=0;
 		}
 		return speed;
 		

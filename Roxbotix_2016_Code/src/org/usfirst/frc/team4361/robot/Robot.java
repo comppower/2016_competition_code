@@ -256,8 +256,7 @@ public class Robot extends IterativeRobot {
 		stick1X = stick[1].getAxis(Joystick.AxisType.kX);
 		stick1Y = stick[1].getAxis(Joystick.AxisType.kY);
 		
-		//light[0].set(Relay.Value.kForward);
-		//light[1].set(Relay.Value.kForward);
+
 		
 		//sets vision tracking vals
 
@@ -301,7 +300,7 @@ public class Robot extends IterativeRobot {
 
     	else if(stick[1].getRawButton(3))
     	{
-    		double speed =turn.turnAngle(navX.getAngle(), -60);
+    		double speed =turn.turnAngle(navX.getAngle(), 180);
     		left.drive(-speed);
     		right.drive(-speed);
     	}
@@ -351,7 +350,16 @@ public class Robot extends IterativeRobot {
 			shooter.shoot(stick[2].getRawButton(5), stick[2].getRawButton(3));
 		   	port.lift(stick[2].getPOV());
 		}
-
+		if(shooter.getShoot())
+		{
+			light[0].set(Relay.Value.kOff);
+			light[1].set(Relay.Value.kOff);
+		}
+		else
+		{
+			light[0].set(Relay.Value.kForward);
+			light[1].set(Relay.Value.kForward);
+		}
     	
     	//Drives indexer
     	shooter.indexAuto(stick[0].getRawButton(1));
@@ -375,6 +383,8 @@ public class Robot extends IterativeRobot {
 	   	SmartDashboard.putBoolean("halfY", track.halfY);
 	   	SmartDashboard.putNumber("angle",navX.getAngle());
 	   	SmartDashboard.putNumber("angle actual", turn.angle);
+	   	SmartDashboard.putNumber("speed", turn.speed);
+	   	SmartDashboard.putNumber("ratio", turn.ratio);
 	
     }
     

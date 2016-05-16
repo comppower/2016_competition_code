@@ -142,7 +142,10 @@ public class Shooter {
 			indTimer.reset();
 		}
 	}
-
+	public boolean getShoot()
+	{
+		return(SHT[0].get()==-1);
+	}
 	private void region() {
 		/*
 		 * public void startIntake(boolean check) { if(check) { CAN[0].set(-.5);
